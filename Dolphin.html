@@ -1,0 +1,835 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>海豚決策孿生系統 · 互動 Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --ink: #1a1814;
+      --ink-soft: #4a4640;
+      --ink-faint: #8a857e;
+      --paper: #faf8f4;
+      --paper2: #f2efe8;
+      --teal: #0f6e56;
+      --teal-light: #e1f5ee;
+      --teal-mid: #1d9e75;
+      --purple: #534ab7;
+      --purple-light: #eeedfe;
+      --amber: #ba7517;
+      --amber-light: #faeeda;
+      --coral: #993c1d;
+      --coral-light: #faece7;
+      --r: 12px;
+      --shadow: 0 2px 16px rgba(26,24,20,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    .app-header {
+      height: 56px;
+      background: rgba(250,248,244,0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(26,24,20,0.1);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .btn-back {
+      width: 36px; height: 36px;
+      border: none;
+      background: var(--paper2);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      color: var(--ink-soft);
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-back:hover { background: var(--teal-light); color: var(--teal); }
+    .btn-back.hidden { visibility: hidden; }
+    .header-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-soft);
+      flex: 1;
+    }
+    .header-badge {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .badge-student { background: var(--teal-light); color: var(--teal); }
+    .badge-teacher { background: var(--purple-light); color: var(--purple); }
+    .badge-hidden { display: none; }
+
+    /* ── SCREEN SYSTEM ── */
+    .screen-wrap { flex: 1; overflow: hidden; position: relative; }
+    .screen {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      padding: 28px 22px 40px;
+      transition: transform 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.38s;
+    }
+    .screen.active  { transform: translateX(0);     opacity: 1; pointer-events: all; }
+    .screen.offLeft { transform: translateX(-100%); opacity: 0; pointer-events: none; }
+    .screen.offRight{ transform: translateX(100%);  opacity: 0; pointer-events: none; }
+
+    /* ── SPLASH ── */
+    #s-splash {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      background: linear-gradient(160deg, #083d2c 0%, #0f6e56 55%, #1d9e75 100%);
+    }
+    .splash-dolphin { font-size: 80px; animation: float 3s ease-in-out infinite; margin-bottom: 20px; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+    .splash-title {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 26px; font-weight: 700;
+      color: white; line-height: 1.3;
+      margin-bottom: 10px;
+    }
+    .splash-sub { font-size: 13px; color: rgba(255,255,255,0.72); line-height: 1.8; max-width: 280px; margin-bottom: 40px; }
+    .btn-start {
+      padding: 14px 40px;
+      background: white; color: var(--teal);
+      border: none; border-radius: 50px;
+      font-size: 15px; font-weight: 700;
+      font-family: 'Noto Sans TC', sans-serif;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+      transition: all 0.2s;
+    }
+    .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.25); }
+    .splash-chips { margin-top: 28px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .splash-chip {
+      font-size: 11px; padding: 4px 12px; border-radius: 20px;
+      background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.88);
+    }
+
+    /* ── ROLE ── */
+    .page-heading { font-family:'Noto Serif TC',serif; font-size:22px; font-weight:700; margin-bottom:6px; }
+    .page-sub { font-size:13px; color:var(--ink-faint); margin-bottom:24px; }
+    .role-cards { display:flex; flex-direction:column; gap:14px; }
+    .role-card {
+      padding: 22px 20px;
+      border-radius: var(--r);
+      border: 2px solid rgba(26,24,20,0.1);
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex; gap: 16px; align-items: flex-start;
+      background: white;
+    }
+    .role-card:hover.student-card { border-color: var(--teal); box-shadow: var(--shadow); transform: translateY(-2px); }
+    .role-card:hover.teacher-card { border-color: var(--purple); box-shadow: var(--shadow); transform: translateY(-2px); }
+    .role-icon { font-size: 38px; flex-shrink:0; }
+    .role-title { font-size:16px; font-weight:700; margin-bottom:4px; }
+    .role-desc { font-size:12px; color:var(--ink-faint); line-height:1.7; }
+    .role-feats { margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
+    .feat-tag {
+      font-size:10px; padding:2px 8px; border-radius:10px;
+      background:var(--teal-light); color:var(--teal);
+    }
+    .feat-tag.p { background:var(--purple-light); color:var(--purple); }
+
+    /* ── EMOTION ── */
+    .emo-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:28px; }
+    .emo-btn {
+      display:flex; flex-direction:column; align-items:center;
+      padding:14px 6px; gap:6px;
+      border: 2px solid var(--paper2);
+      border-radius:var(--r);
+      background:var(--paper2);
+      cursor:pointer; transition:all 0.2s;
+    }
+    .emo-btn:hover { border-color:var(--teal-mid); }
+    .emo-btn.on { border-color:var(--teal); background:var(--teal-light); }
+    .emo-emoji { font-size:28px; }
+    .emo-label { font-size:10px; color:var(--ink-faint); text-align:center; }
+    .emo-btn.on .emo-label { color:var(--teal); }
+    .field-label { font-size:13px; font-weight:500; color:var(--ink-soft); margin-bottom:8px; }
+    .text-area {
+      width:100%; padding:12px 14px;
+      border:1.5px solid rgba(26,24,20,0.15);
+      border-radius:var(--r);
+      font-size:13px; font-family:'Noto Sans TC',sans-serif;
+      background:white; color:var(--ink);
+      outline:none; resize:none; transition:border-color 0.2s;
+    }
+    .text-area:focus { border-color:var(--teal); }
+    .btn-next {
+      margin-top:20px; width:100%; padding:14px;
+      background:var(--teal); color:white;
+      border:none; border-radius:50px;
+      font-size:15px; font-weight:500;
+      font-family:'Noto Sans TC',sans-serif;
+      cursor:pointer; transition:all 0.2s;
+    }
+    .btn-next:hover { background:#0a5a45; }
+    .btn-next:disabled { background:var(--ink-faint); cursor:not-allowed; }
+
+    /* ── CHAT ── */
+    #s-chat { padding:0; display:flex; flex-direction:column; overflow:hidden; }
+    .dolphin-bar {
+      padding:14px 20px; display:flex; gap:12px; align-items:center;
+      border-bottom:1px solid rgba(26,24,20,0.08); flex-shrink:0;
+      background:white;
+    }
+    .dolphin-ava {
+      width:44px; height:44px; border-radius:50%;
+      background:var(--teal-light);
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px;
+    }
+    .dolphin-name { font-size:15px; font-weight:600; }
+    .dolphin-online { font-size:11px; color:var(--teal-mid); }
+    .chat-msgs {
+      flex:1; overflow-y:auto;
+      padding:16px 20px; display:flex;
+      flex-direction:column; gap:12px;
+    }
+    .msg { max-width:82%; animation:msgIn 0.3s ease; }
+    @keyframes msgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .msg.bot { align-self:flex-start; }
+    .msg.me  { align-self:flex-end; }
+    .bubble { padding:10px 14px; border-radius:18px; font-size:13px; line-height:1.75; }
+    .msg.bot .bubble { background:var(--paper2); border-bottom-left-radius:4px; }
+    .msg.me  .bubble { background:var(--teal); color:white; border-bottom-right-radius:4px; }
+    .msg-time { font-size:10px; color:var(--ink-faint); margin-top:4px; padding:0 4px; }
+    .msg.me .msg-time { text-align:right; }
+    .typing { display:flex; gap:4px; padding:12px 14px; background:var(--paper2); border-radius:18px; border-bottom-left-radius:4px; width:fit-content; }
+    .typing span {
+      width:7px; height:7px; border-radius:50%;
+      background:var(--ink-faint);
+      animation:dot 1.2s infinite;
+    }
+    .typing span:nth-child(2){animation-delay:.2s}
+    .typing span:nth-child(3){animation-delay:.4s}
+    @keyframes dot{0%,80%,100%{transform:scale(.7);opacity:.5}40%{transform:scale(1);opacity:1}}
+    .scene-chips { padding:10px 20px 6px; display:flex; flex-direction:column; gap:8px; }
+    .scene-label { font-size:11px; color:var(--ink-faint); }
+    .scene-btn {
+      padding:10px 14px; border:1.5px solid rgba(26,24,20,0.12);
+      border-radius:10px; font-size:12px; cursor:pointer;
+      background:white; color:var(--ink-soft); text-align:left;
+      font-family:'Noto Sans TC',sans-serif; transition:all 0.2s; line-height:1.5;
+    }
+    .scene-btn:hover { border-color:var(--teal); color:var(--teal); background:var(--teal-light); }
+    .sim-nudge {
+      display:none; margin:4px 20px 4px;
+      padding:12px 16px; background:var(--teal-light);
+      border-radius:var(--r); cursor:pointer; transition:all 0.2s;
+      align-items:center; gap:10px;
+    }
+    .sim-nudge.show { display:flex; }
+    .sim-nudge:hover { background:#c5eadd; }
+    .sim-nudge-text { font-size:12px; color:var(--teal); font-weight:500; flex:1; }
+    .chat-input-row {
+      padding:10px 20px 16px; display:flex; gap:10px;
+      border-top:1px solid rgba(26,24,20,0.08);
+      flex-shrink:0; background:white;
+    }
+    .chat-input {
+      flex:1; padding:10px 14px;
+      border:1.5px solid rgba(26,24,20,0.15);
+      border-radius:24px; font-size:13px;
+      font-family:'Noto Sans TC',sans-serif;
+      background:white; outline:none; transition:border-color 0.2s;
+    }
+    .chat-input:focus { border-color:var(--teal); }
+    .btn-send {
+      width:40px; height:40px; border:none;
+      background:var(--teal); color:white; border-radius:50%;
+      cursor:pointer; font-size:16px;
+      display:flex; align-items:center; justify-content:center;
+      transition:all 0.2s; flex-shrink:0;
+    }
+    .btn-send:hover { background:#0a5a45; }
+
+    /* ── DECISION ── */
+    .situation-box {
+      background:var(--amber-light);
+      border-left:3px solid var(--amber);
+      border-radius:var(--r); padding:14px 16px;
+      margin-bottom:22px; font-size:13px;
+      line-height:1.75; color:var(--ink-soft);
+    }
+    .situation-box strong { color:var(--amber); font-size:11px; display:block; margin-bottom:4px; }
+    .choice-list { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+    .choice-item {
+      border:2px solid rgba(26,24,20,0.12);
+      border-radius:var(--r); overflow:hidden;
+      cursor:pointer; transition:all 0.25s; background:white;
+    }
+    .choice-item:hover { border-color:var(--teal-mid); box-shadow:var(--shadow); }
+    .choice-item.picked { border-color:var(--teal); }
+    .choice-head { padding:14px 16px; display:flex; align-items:center; gap:12px; }
+    .choice-letter {
+      width:28px; height:28px; border-radius:8px;
+      background:var(--paper2);
+      display:flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:700; color:var(--ink-soft); flex-shrink:0;
+    }
+    .choice-item.picked .choice-letter { background:var(--teal); color:white; }
+    .choice-text { font-size:13px; font-weight:500; flex:1; }
+    .rec-badge { font-size:10px; padding:3px 8px; background:var(--teal); color:white; border-radius:10px; white-space:nowrap; }
+    .choice-outcomes { display:none; flex-direction:column; gap:8px; padding:0 16px 16px; }
+    .choice-item.picked .choice-outcomes { display:flex; }
+    .out-row { display:flex; align-items:center; gap:10px; }
+    .out-label { font-size:11px; color:var(--ink-faint); width:68px; flex-shrink:0; }
+    .bar-track { flex:1; height:8px; background:var(--paper2); border-radius:10px; overflow:hidden; }
+    .bar-fill { height:100%; border-radius:10px; width:0; transition:width 0.75s cubic-bezier(0.4,0,0.2,1); }
+    .bar-g { background:var(--teal-mid); }
+    .bar-a { background:var(--amber); }
+    .bar-c { background:var(--coral); }
+    .out-pct { font-size:11px; font-weight:600; width:30px; text-align:right; flex-shrink:0; }
+    .bot-comment {
+      display:none; margin-top:16px; padding:14px 16px;
+      background:var(--teal-light); border-radius:var(--r);
+      gap:10px; align-items:flex-start;
+    }
+    .bot-comment.show { display:flex; }
+    .bot-comment-icon { font-size:20px; flex-shrink:0; }
+    .bot-comment-body { font-size:12px; color:var(--teal); line-height:1.75; }
+
+    /* ── TEACHER ── */
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px; }
+    .stat-box { background:var(--paper2); border-radius:var(--r); padding:14px; text-align:center; }
+    .stat-num { font-size:26px; font-weight:700; }
+    .stat-lbl { font-size:10px; color:var(--ink-faint); margin-top:2px; }
+    .stat-box.alert .stat-num { color:var(--coral); }
+    .stat-box.good  .stat-num { color:var(--teal); }
+    .sec-label { font-size:11px; font-weight:600; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
+    .chart-box { background:white; border-radius:var(--r); padding:16px; margin-bottom:22px; box-shadow:var(--shadow); height:188px; }
+    .stu-list { display:flex; flex-direction:column; gap:10px; }
+    .stu-card {
+      background:white; border-radius:var(--r);
+      padding:14px 16px; display:flex; gap:12px; align-items:center;
+      box-shadow:0 1px 8px rgba(26,24,20,0.06);
+      cursor:pointer; transition:all 0.2s;
+    }
+    .stu-card:hover { transform:translateX(4px); }
+    .stu-ava { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .av-r { background:var(--coral-light); }
+    .av-a { background:var(--amber-light); }
+    .stu-info { flex:1; }
+    .stu-name { font-size:13px; font-weight:600; }
+    .stu-reason { font-size:11px; color:var(--ink-faint); margin-top:2px; }
+    .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .dot-r { background:var(--coral); }
+    .dot-a { background:var(--amber); }
+
+    /* ── MODAL ── */
+    .overlay {
+      position:fixed; inset:0;
+      background:rgba(26,24,20,0.5);
+      z-index:100; display:flex; align-items:flex-end;
+      opacity:0; pointer-events:none; transition:opacity 0.3s;
+    }
+    .overlay.show { opacity:1; pointer-events:all; }
+    .sheet {
+      background:var(--paper); border-radius:20px 20px 0 0;
+      padding:24px 22px 44px; width:100%;
+      transform:translateY(100%);
+      transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    .overlay.show .sheet { transform:translateY(0); }
+    .sheet-handle { width:36px; height:4px; background:var(--paper2); border-radius:2px; margin:0 auto 20px; }
+    .sheet-title { font-size:16px; font-weight:700; margin-bottom:4px; }
+    .sheet-sub { font-size:12px; color:var(--ink-faint); margin-bottom:18px; }
+    .mini-bars { height:80px; background:var(--paper2); border-radius:10px; margin-bottom:16px; display:flex; align-items:flex-end; padding:10px 10px 0; gap:4px; }
+    .mb { flex:1; border-radius:4px 4px 0 0; transition:height 0.5s; min-height:0; }
+    .mb-label-row { display:flex; gap:4px; padding:4px 10px 0; margin-bottom:14px; }
+    .mb-label { flex:1; font-size:9px; text-align:center; color:var(--ink-faint); }
+    .sheet-note { font-size:12px; color:var(--ink-soft); background:var(--paper2); border-radius:8px; padding:12px 14px; line-height:1.75; }
+    .btn-close { margin-top:16px; width:100%; padding:12px; background:var(--paper2); border:none; border-radius:50px; font-size:14px; font-family:'Noto Sans TC',sans-serif; cursor:pointer; color:var(--ink-soft); }
+    .btn-close:hover { background:var(--teal-light); color:var(--teal); }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <button class="btn-back hidden" id="backBtn" onclick="goBack()">←</button>
+  <div class="header-title" id="hTitle">海豚決策孿生系統</div>
+  <div class="header-badge badge-hidden" id="hBadge"></div>
+</div>
+
+<!-- SCREEN WRAP -->
+<div class="screen-wrap">
+
+  <!-- 0. SPLASH -->
+  <div class="screen active" id="s-splash">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;text-align:center;padding:40px 24px;background:linear-gradient(160deg,#083d2c 0%,#0f6e56 55%,#1d9e75 100%);margin:-28px -22px -40px;">
+      <div class="splash-dolphin">🐬</div>
+      <div class="splash-title">海豚決策孿生系統<br>Decision Twin</div>
+      <div class="splash-sub">讓每個人在情緒、學習與人際中，做出更好的選擇</div>
+      <button class="btn-start" onclick="nav('s-role')">開始體驗 →</button>
+      <div class="splash-chips">
+        <span class="splash-chip">教育 AI</span>
+        <span class="splash-chip">情緒支持</span>
+        <span class="splash-chip">決策模擬</span>
+        <span class="splash-chip">社會情緒學習</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. ROLE -->
+  <div class="screen offRight" id="s-role">
+    <div class="page-heading">你是誰？</div>
+    <div class="page-sub">選擇角色，進入對應的功能介面</div>
+    <div class="role-cards">
+      <div class="role-card student-card" onclick="pickRole('student')">
+        <div class="role-icon">🧑‍🎓</div>
+        <div>
+          <div class="role-title">我是學生</div>
+          <div class="role-desc">記錄今天的情緒，與 AI 海豚小藍聊聊你遇到的事，模擬不同選擇的結果。</div>
+          <div class="role-feats">
+            <span class="feat-tag">情緒記錄</span>
+            <span class="feat-tag">海豚聊天</span>
+            <span class="feat-tag">決策模擬</span>
+          </div>
+        </div>
+      </div>
+      <div class="role-card teacher-card" onclick="pickRole('teacher')">
+        <div class="role-icon">👩‍🏫</div>
+        <div>
+          <div class="role-title">我是教師</div>
+          <div class="role-desc">掌握全班情緒趨勢，提早發現需要關注的學生，做出更好的教學決策。</div>
+          <div class="role-feats">
+            <span class="feat-tag p">班級儀表板</span>
+            <span class="feat-tag p">預警系統</span>
+            <span class="feat-tag p">趨勢分析</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. EMOTION CHECK-IN -->
+  <div class="screen offRight" id="s-emotion">
+    <div class="page-heading">今天，你感覺怎麼樣？</div>
+    <div class="page-sub">每天一次記錄，海豚小藍會更了解你</div>
+    <div class="emo-grid">
+      <button class="emo-btn" onclick="pickEmo(this)"><span class="emo-emoji">😄</span><span class="emo-label">很開心</span></button>
+      <button class="emo-btn" onclick="pickEmo(this)"><span class="emo-emoji">😊</span><span class="emo-label">還不錯</span></button>
+      <button class="emo-btn" onclick="pickEmo(this)"><span class="emo-emoji">😐</span><span class="emo-label">普通</span></button>
+      <button class="emo-btn" onclick="pickEmo(this)"><span class="emo-emoji">😔</span><span class="emo-label">有點難過</span></button>
+      <button class="emo-btn" onclick="pickEmo(this)"><span class="emo-emoji">😣</span><span class="emo-label">壓力大</span></button>
+    </div>
+    <div class="field-label">說說發生了什麼（選填）</div>
+    <textarea class="text-area" rows="3" placeholder="今天有什麼想聊聊的事嗎？"></textarea>
+    <button class="btn-next" id="emoBtn" disabled onclick="nav('s-chat')">與海豚小藍聊聊 →</button>
+  </div>
+
+  <!-- 3. CHAT -->
+  <div class="screen offRight" id="s-chat">
+    <div class="dolphin-bar">
+      <div class="dolphin-ava">🐬</div>
+      <div>
+        <div class="dolphin-name">小藍</div>
+        <div class="dolphin-online">● 線上中</div>
+      </div>
+    </div>
+    <div class="chat-msgs" id="chatMsgs"></div>
+    <div class="scene-chips" id="sceneChips">
+      <div class="scene-label">選一個話題，或直接輸入</div>
+      <button class="scene-btn" onclick="pickScene(0)">😔 我跟好朋友吵架了，不知道怎麼辦...</button>
+      <button class="scene-btn" onclick="pickScene(1)">😰 朋友叫我幫他作業，很為難</button>
+      <button class="scene-btn" onclick="pickScene(2)">😟 班上有人一直排擠我</button>
+    </div>
+    <div class="sim-nudge" id="simNudge" onclick="toDecision()">
+      <span>🔮</span>
+      <span class="sim-nudge-text">要不要用「決策模擬器」看看不同選擇的後果？</span>
+      <span style="color:var(--teal);font-size:16px;">→</span>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatIn" placeholder="說說你的感受..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="btn-send" onclick="sendMsg()">→</button>
+    </div>
+  </div>
+
+  <!-- 4. DECISION -->
+  <div class="screen offRight" id="s-decision">
+    <div class="page-heading">決策模擬器</div>
+    <div class="page-sub">點選不同選項，看看可能的結果</div>
+    <div class="situation-box"><strong>📍 情境</strong><span id="situTxt"></span></div>
+    <div class="choice-list" id="choiceList"></div>
+    <div class="bot-comment" id="botComment">
+      <span class="bot-comment-icon">🐬</span>
+      <div class="bot-comment-body" id="botCommentTxt"></div>
+    </div>
+  </div>
+
+  <!-- 5. TEACHER -->
+  <div class="screen offRight" id="s-teacher">
+    <div class="page-heading">班級儀表板</div>
+    <div class="page-sub">三年甲班 · 本週概況</div>
+    <div class="stats-row">
+      <div class="stat-box good"><div class="stat-num">23</div><div class="stat-lbl">班級人數</div></div>
+      <div class="stat-box alert"><div class="stat-num">5</div><div class="stat-lbl">需要關注</div></div>
+      <div class="stat-box"><div class="stat-num">78%</div><div class="stat-lbl">今日記錄率</div></div>
+    </div>
+    <div class="sec-label">本週情緒趨勢</div>
+    <div class="chart-box"><canvas id="moodChart"></canvas></div>
+    <div class="sec-label">需要關注的學生</div>
+    <div class="stu-list">
+      <div class="stu-card" onclick="openSheet('王小明','連續三天記錄「壓力大」，昨天提及人際衝突，已主動使用決策模擬器兩次。',[2,2,1,1,2,1,2])">
+        <div class="stu-ava av-r">🧑</div>
+        <div class="stu-info"><div class="stu-name">王小明</div><div class="stu-reason">連續三天情緒低落 · 提及人際衝突</div></div>
+        <div class="dot dot-r"></div>
+      </div>
+      <div class="stu-card" onclick="openSheet('陳小雯','上週參與率正常，本週已三天未記錄情緒，課堂觀察表現也較安靜。',[4,4,3,0,0,0,0])">
+        <div class="stu-ava av-a">👧</div>
+        <div class="stu-info"><div class="stu-name">陳小雯</div><div class="stu-reason">本週連續三天未記錄情緒</div></div>
+        <div class="dot dot-a"></div>
+      </div>
+      <div class="stu-card" onclick="openSheet('林阿杰','本週多次記錄焦慮情緒，並詢問考試前的決策情境，呈現高度測驗焦慮跡象。',[3,3,2,2,2,3,2])">
+        <div class="stu-ava av-a">🧒</div>
+        <div class="stu-info"><div class="stu-name">林阿杰</div><div class="stu-reason">本週焦慮指數偏高 · 多次使用決策模擬</div></div>
+        <div class="dot dot-a"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /screen-wrap -->
+
+<!-- MODAL SHEET -->
+<div class="overlay" id="overlay" onclick="closeSheet(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="shTitle"></div>
+    <div class="sheet-sub">本週情緒記錄（一 → 日）</div>
+    <div class="mini-bars" id="miniBars"></div>
+    <div class="mb-label-row" id="miniLabels"></div>
+    <div class="sheet-note" id="shNote"></div>
+    <button class="btn-close" onclick="closeSheet()">關閉</button>
+  </div>
+</div>
+
+<script>
+// ────────────────────────────────────────────
+//  NAVIGATION
+// ────────────────────────────────────────────
+let stack = ['s-splash'];
+let cur = 's-splash';
+let chartInst = null;
+
+function nav(id) {
+  const curEl = document.getElementById(cur);
+  const nxtEl = document.getElementById(id);
+  curEl.classList.remove('active');
+  curEl.classList.add('offLeft');
+  nxtEl.classList.remove('offLeft','offRight');
+  nxtEl.classList.add('active');
+  stack.push(id);
+  cur = id;
+  updateHeader(id);
+  if (id === 's-chat') initChat();
+  if (id === 's-teacher') setTimeout(initChart, 300);
+}
+
+function goBack() {
+  if (stack.length <= 1) return;
+  const from = stack.pop();
+  const to   = stack[stack.length - 1];
+  const fromEl = document.getElementById(from);
+  const toEl   = document.getElementById(to);
+  fromEl.classList.remove('active');
+  fromEl.classList.add('offRight');
+  toEl.classList.remove('offLeft','offRight');
+  toEl.classList.add('active');
+  cur = to;
+  updateHeader(to);
+}
+
+const TITLES = {
+  's-splash':   '海豚決策孿生系統',
+  's-role':     '選擇角色',
+  's-emotion':  '情緒記錄',
+  's-chat':     '與小藍對話',
+  's-decision': '決策模擬器',
+  's-teacher':  '班級儀表板',
+};
+function updateHeader(id) {
+  document.getElementById('hTitle').textContent = TITLES[id] || '';
+  document.getElementById('backBtn').classList.toggle('hidden', id === 's-splash');
+  const b = document.getElementById('hBadge');
+  if (['s-emotion','s-chat','s-decision'].includes(id)) {
+    b.textContent = '學生'; b.className = 'header-badge badge-student';
+  } else if (id === 's-teacher') {
+    b.textContent = '教師'; b.className = 'header-badge badge-teacher';
+  } else {
+    b.className = 'header-badge badge-hidden';
+  }
+}
+
+// ────────────────────────────────────────────
+//  ROLE
+// ────────────────────────────────────────────
+function pickRole(r) {
+  if (r === 'student') nav('s-emotion');
+  else nav('s-teacher');
+}
+
+// ────────────────────────────────────────────
+//  EMOTION
+// ────────────────────────────────────────────
+function pickEmo(el) {
+  document.querySelectorAll('.emo-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('emoBtn').disabled = false;
+}
+
+// ────────────────────────────────────────────
+//  CHAT
+// ────────────────────────────────────────────
+let scene = 0, chatRound = 0;
+
+const SCENARIOS = [
+  {
+    label: '我跟好朋友吵架了，不知道怎麼辦...',
+    situ:  '我跟好朋友因為一件誤解吵架了，已經三天沒說話。我很在乎這段友誼，但又不確定要不要先道歉。',
+    open:  '聽起來你心裡很不好受 😔 三天沒說話，一定很煎熬。你說這是「誤解」——你有機會跟他說清楚嗎？',
+    replies: [
+      '謝謝你告訴我這些 💙 這說明你很在乎這段友誼。讓我們一起想想，你有哪些選擇？',
+      '我聽到了。這種糾結說明你是個重感情的人。要不要用決策模擬，看看不同做法的可能結果？',
+    ],
+    choices: [
+      { l:'A', t:'主動傳訊息道歉，解釋清楚誤會', rec:true,
+        outs:[{lb:'關係修復',cl:'bar-g',pct:75},{lb:'尷尬收場',cl:'bar-a',pct:18},{lb:'更嚴重',cl:'bar-c',pct:7}],
+        tip:'這個選擇需要勇氣，但主動溝通是最有效的方式。大多數情況下，真誠的道歉都能化解誤解。' },
+      { l:'B', t:'等他先來找我，先冷靜幾天', rec:false,
+        outs:[{lb:'自然和解',cl:'bar-g',pct:35},{lb:'繼續冷戰',cl:'bar-a',pct:45},{lb:'友誼破裂',cl:'bar-c',pct:20}],
+        tip:'等待有時必要，但長時間冷戰可能讓誤解加深。若超過一週對方沒主動，建議你採取行動。' },
+      { l:'C', t:'請共同朋友幫忙轉達、從中調解', rec:false,
+        outs:[{lb:'成功調解',cl:'bar-g',pct:55},{lb:'事情複雜化',cl:'bar-a',pct:30},{lb:'誤解更深',cl:'bar-c',pct:15}],
+        tip:'透過第三方調解有一定效果，但也可能讓事情更複雜。如果直接溝通太難，這是個折衷方案。' },
+    ]
+  },
+  {
+    label: '朋友叫我幫他作業，很為難',
+    situ:  '好朋友說他沒時間做作業，求我把作業借他抄。我不想讓他失望，但又擔心被老師發現一起受罰。',
+    open:  '這個情況真的很為難 😟 你不想讓朋友失望，但也擔心自己受牽連，兩邊都有顧慮對嗎？讓我們一起想清楚。',
+    replies: [
+      '你願意考慮幫他，說明你是個重視朋友的人 🌟 但你也有保護自己的責任，兩件事都重要。',
+      '嗯，我明白你的兩難。要不要用決策模擬，一起看看不同選擇的風險？',
+    ],
+    choices: [
+      { l:'A', t:'拒絕，但提議一起在下課前把作業完成', rec:true,
+        outs:[{lb:'維持信任',cl:'bar-g',pct:72},{lb:'朋友不開心',cl:'bar-a',pct:23},{lb:'關係受損',cl:'bar-c',pct:5}],
+        tip:'這是最有智慧的選擇——你幫助了朋友，也保護了自己。真正的朋友會尊重你的邊界。' },
+      { l:'B', t:'借他抄，這次就算了', rec:false,
+        outs:[{lb:'暫時解決',cl:'bar-g',pct:40},{lb:'成為習慣',cl:'bar-a',pct:40},{lb:'一起被罰',cl:'bar-c',pct:20}],
+        tip:'短期解決了問題，但這可能成為習慣，讓你持續面臨風險。你值得有自己的界限。' },
+      { l:'C', t:'直接拒絕，說明自己也有壓力', rec:false,
+        outs:[{lb:'朋友理解',cl:'bar-g',pct:50},{lb:'短暫不滿',cl:'bar-a',pct:38},{lb:'誤解你',cl:'bar-c',pct:12}],
+        tip:'誠實說出自己的處境是勇敢的。大部分朋友都能理解；如果不理解，可能需要重新評估這段關係。' },
+    ]
+  },
+  {
+    label: '班上有人一直排擠我',
+    situ:  '班上一群同學成立了群組，刻意把我排在外面。午餐時間也常常找不到人一起坐，感覺很孤單。',
+    open:  '聽到這些，我心裡也跟著難受 💙 那種孤單的感覺真的很不好受。你知道是從什麼時候開始的嗎？',
+    replies: [
+      '謝謝你願意跟我說 💙 不管什麼原因，你都不應該被這樣對待。我們一起想想你能做什麼。',
+      '我在這裡陪著你 🐬 你已經想了很多了，要不要用決策模擬看看不同做法的可能結果？',
+    ],
+    choices: [
+      { l:'A', t:'主動接近其他同學，試著建立新的連結', rec:true,
+        outs:[{lb:'找到新朋友',cl:'bar-g',pct:65},{lb:'慢慢融入',cl:'bar-a',pct:25},{lb:'再次碰壁',cl:'bar-c',pct:10}],
+        tip:'把眼光放寬，班上可能有其他也在尋找朋友的人。不要讓一個圈子定義你的人際關係。' },
+      { l:'B', t:'直接去問其中一個同學，發生了什麼', rec:false,
+        outs:[{lb:'誤會解開',cl:'bar-g',pct:45},{lb:'尷尬但平和',cl:'bar-a',pct:35},{lb:'衝突升高',cl:'bar-c',pct:20}],
+        tip:'直接溝通需要很大勇氣，這可能是最快解決問題的方式，但也要做好接受各種回應的心理準備。' },
+      { l:'C', t:'告訴導師或輔導老師，請求協助', rec:false,
+        outs:[{lb:'得到支持',cl:'bar-g',pct:70},{lb:'同學知道',cl:'bar-a',pct:20},{lb:'情況複雜化',cl:'bar-c',pct:10}],
+        tip:'向大人求助是你的權利，不是軟弱。輔導老師受過專業訓練，可以幫助你更有效地處理這個狀況。' },
+    ]
+  },
+];
+
+function initChat() {
+  const box = document.getElementById('chatMsgs');
+  box.innerHTML = '';
+  chatRound = 0;
+  document.getElementById('sceneChips').style.display = 'flex';
+  document.getElementById('simNudge').classList.remove('show');
+  setTimeout(() => addMsg('bot', '嗨！我是小藍 🐬 很高興今天也陪著你。你今天有什麼想聊聊的嗎？'), 400);
+}
+
+function addMsg(role, text) {
+  const box = document.getElementById('chatMsgs');
+  const now  = new Date();
+  const t    = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+  const div  = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `<div class="bubble">${text}</div><div class="msg-time">${t}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function showTyping() {
+  const box = document.getElementById('chatMsgs');
+  const div = document.createElement('div');
+  div.id = 'typing'; div.className = 'msg bot';
+  div.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+function removeTyping() { const el = document.getElementById('typing'); if(el) el.remove(); }
+
+function pickScene(idx) {
+  scene = idx;
+  document.getElementById('sceneChips').style.display = 'none';
+  addMsg('me', SCENARIOS[idx].label);
+  setTimeout(() => {
+    showTyping();
+    setTimeout(() => { removeTyping(); addMsg('bot', SCENARIOS[idx].open); chatRound = 1; }, 1800);
+  }, 300);
+}
+
+function sendMsg() {
+  const inp = document.getElementById('chatIn');
+  const txt = inp.value.trim(); if (!txt) return;
+  addMsg('me', txt); inp.value = '';
+  if (chatRound >= 1) {
+    const rep = SCENARIOS[scene].replies[Math.min(chatRound-1, 1)];
+    setTimeout(() => {
+      showTyping();
+      setTimeout(() => {
+        removeTyping(); addMsg('bot', rep); chatRound++;
+        if (chatRound >= 3) setTimeout(() => document.getElementById('simNudge').classList.add('show'), 500);
+      }, 1600);
+    }, 300);
+  }
+}
+
+function toDecision() {
+  const sc = SCENARIOS[scene];
+  document.getElementById('situTxt').textContent = sc.situ;
+  buildChoices(sc);
+  nav('s-decision');
+}
+
+// ────────────────────────────────────────────
+//  DECISION
+// ────────────────────────────────────────────
+function buildChoices(sc) {
+  const list = document.getElementById('choiceList');
+  list.innerHTML = '';
+  document.getElementById('botComment').classList.remove('show');
+  sc.choices.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'choice-item';
+    d.onclick = () => pickChoice(d, c);
+    d.innerHTML = `
+      <div class="choice-head">
+        <div class="choice-letter">${c.l}</div>
+        <div class="choice-text">${c.t}</div>
+        ${c.rec ? '<div class="rec-badge">海豚推薦</div>' : ''}
+      </div>
+      <div class="choice-outcomes">
+        ${c.outs.map(o => `
+          <div class="out-row">
+            <div class="out-label">${o.lb}</div>
+            <div class="bar-track"><div class="bar-fill ${o.cl}" data-p="${o.pct}"></div></div>
+            <div class="out-pct" style="color:var(${o.cl==='bar-g'?'--teal-mid':o.cl==='bar-a'?'--amber':'--coral'})">${o.pct}%</div>
+          </div>`).join('')}
+      </div>`;
+    list.appendChild(d);
+  });
+}
+
+function pickChoice(el, c) {
+  document.querySelectorAll('.choice-item').forEach(x => x.classList.remove('picked'));
+  el.classList.add('picked');
+  setTimeout(() => {
+    el.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.p + '%');
+  }, 30);
+  document.getElementById('botCommentTxt').textContent = c.tip;
+  const bc = document.getElementById('botComment');
+  bc.classList.add('show');
+  bc.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ────────────────────────────────────────────
+//  TEACHER
+// ────────────────────────────────────────────
+function initChart() {
+  const ctx = document.getElementById('moodChart');
+  if (!ctx) return;
+  if (chartInst) { chartInst.destroy(); }
+  chartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['週一','週二','週三','週四','週五','週六','週日'],
+      datasets: [
+        { label:'班級平均心情', data:[3.8,3.5,3.2,3.0,3.4,3.7,3.6],
+          borderColor:'#1d9e75', backgroundColor:'rgba(29,158,117,0.1)',
+          borderWidth:2, pointRadius:4, pointBackgroundColor:'#1d9e75',
+          fill:true, tension:0.4 },
+        { label:'焦慮指數', data:[2.1,2.4,2.8,3.1,2.9,2.3,2.2],
+          borderColor:'#ba7517', backgroundColor:'rgba(186,117,23,0)',
+          borderWidth:2, pointRadius:4, pointBackgroundColor:'#ba7517',
+          fill:false, tension:0.4 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:true, position:'top', labels:{ font:{size:11,family:'Noto Sans TC'}, boxWidth:12, padding:12 }}},
+      scales: {
+        y:{ min:1, max:5, ticks:{font:{size:10},stepSize:1}, grid:{color:'rgba(26,24,20,0.06)'} },
+        x:{ ticks:{font:{size:10}}, grid:{display:false} }
+      }
+    }
+  });
+}
+
+// ────────────────────────────────────────────
+//  MODAL
+// ────────────────────────────────────────────
+const DAYS = ['一','二','三','四','五','六','日'];
+const COLORS = { 0:'var(--paper)', 1:'var(--coral)', 2:'var(--coral)', 3:'var(--amber)', 4:'var(--teal-mid)', 5:'var(--teal)' };
+
+function openSheet(name, note, data) {
+  document.getElementById('shTitle').textContent = name + ' 的本週概況';
+  document.getElementById('shNote').textContent = '📝 ' + note;
+  const bars   = document.getElementById('miniBars');
+  const labels = document.getElementById('miniLabels');
+  bars.innerHTML = ''; labels.innerHTML = '';
+  data.forEach((v,i) => {
+    const pct   = v === 0 ? 0 : Math.max(8, (v/5)*100);
+    const color = COLORS[v] || 'var(--paper2)';
+    bars.innerHTML   += `<div class="mb" style="height:${pct}%;background:${color};"></div>`;
+    labels.innerHTML += `<div class="mb-label">${DAYS[i]}</div>`;
+  });
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeSheet(e) {
+  if (!e || e.target === document.getElementById('overlay') || e.target.classList.contains('btn-close'))
+    document.getElementById('overlay').classList.remove('show');
+}
+</script>
+</body>
+</html>
