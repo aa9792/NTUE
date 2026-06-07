@@ -9,372 +9,338 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     :root {
-      --ink: #1a1814;
-      --ink-soft: #4a4640;
-      --ink-faint: #8a857e;
-      --paper: #faf8f4;
-      --paper2: #f2efe8;
-      --teal: #0f6e56;
-      --teal-light: #e1f5ee;
-      --teal-mid: #1d9e75;
-      --purple: #534ab7;
-      --purple-light: #eeedfe;
-      --amber: #ba7517;
-      --amber-light: #faeeda;
-      --coral: #993c1d;
-      --coral-light: #faece7;
-      --r: 12px;
-      --shadow: 0 2px 16px rgba(26,24,20,0.08);
+      --ink: #1a1814; --ink-soft: #4a4640; --ink-faint: #8a857e;
+      --paper: #faf8f4; --paper2: #f2efe8;
+      --teal: #0f6e56; --teal-light: #e1f5ee; --teal-mid: #1d9e75;
+      --purple: #534ab7; --purple-light: #eeedfe;
+      --amber: #ba7517; --amber-light: #faeeda;
+      --coral: #993c1d; --coral-light: #faece7;
+      --blue: #185fa5; --blue-light: #e6f1fb;
+      --r: 12px; --shadow: 0 2px 16px rgba(26,24,20,0.08);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Noto Sans TC', sans-serif;
-      background: var(--paper);
-      color: var(--ink);
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      background: var(--paper); color: var(--ink);
+      height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column;
     }
 
     /* ── HEADER ── */
     .app-header {
-      height: 56px;
-      background: rgba(250,248,244,0.96);
+      height: 56px; background: rgba(250,248,244,0.96);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(26,24,20,0.1);
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      gap: 12px;
-      flex-shrink: 0;
-      z-index: 10;
+      display: flex; align-items: center; padding: 0 20px; gap: 12px;
+      flex-shrink: 0; z-index: 10;
     }
     .btn-back {
-      width: 36px; height: 36px;
-      border: none;
-      background: var(--paper2);
-      border-radius: 8px;
-      cursor: pointer;
+      width: 36px; height: 36px; border: none; background: var(--paper2);
+      border-radius: 8px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      color: var(--ink-soft);
-      transition: all 0.2s;
-      flex-shrink: 0;
+      font-size: 18px; color: var(--ink-soft); transition: all 0.2s; flex-shrink: 0;
     }
     .btn-back:hover { background: var(--teal-light); color: var(--teal); }
     .btn-back.hidden { visibility: hidden; }
-    .header-title {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--ink-soft);
-      flex: 1;
-    }
-    .header-badge {
-      font-size: 11px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-weight: 500;
-    }
+    .header-title { font-size: 14px; font-weight: 500; color: var(--ink-soft); flex: 1; }
+    .header-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
     .badge-student { background: var(--teal-light); color: var(--teal); }
     .badge-teacher { background: var(--purple-light); color: var(--purple); }
-    .badge-hidden { display: none; }
+    .badge-hidden  { display: none; }
 
-    /* ── SCREEN SYSTEM ── */
+    /* ── SCREENS ── */
     .screen-wrap { flex: 1; overflow: hidden; position: relative; }
     .screen {
-      position: absolute;
-      inset: 0;
-      overflow-y: auto;
+      position: absolute; inset: 0; overflow-y: auto;
       padding: 28px 22px 40px;
       transition: transform 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.38s;
     }
-    .screen.active  { transform: translateX(0);     opacity: 1; pointer-events: all; }
-    .screen.offLeft { transform: translateX(-100%); opacity: 0; pointer-events: none; }
-    .screen.offRight{ transform: translateX(100%);  opacity: 0; pointer-events: none; }
+    .screen.active   { transform: translateX(0);     opacity: 1; pointer-events: all; }
+    .screen.offLeft  { transform: translateX(-100%); opacity: 0; pointer-events: none; }
+    .screen.offRight { transform: translateX(100%);  opacity: 0; pointer-events: none; }
 
     /* ── SPLASH ── */
     #s-splash {
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center;
+      align-items: center; justify-content: center; text-align: center;
       background: linear-gradient(160deg, #083d2c 0%, #0f6e56 55%, #1d9e75 100%);
     }
     .splash-dolphin { font-size: 80px; animation: float 3s ease-in-out infinite; margin-bottom: 20px; }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
     .splash-title {
-      font-family: 'Noto Serif TC', serif;
-      font-size: 26px; font-weight: 700;
-      color: white; line-height: 1.3;
-      margin-bottom: 10px;
+      font-family: 'Noto Serif TC', serif; font-size: 26px; font-weight: 700;
+      color: white; line-height: 1.3; margin-bottom: 10px;
     }
     .splash-sub { font-size: 13px; color: rgba(255,255,255,0.72); line-height: 1.8; max-width: 280px; margin-bottom: 40px; }
     .btn-start {
-      padding: 14px 40px;
-      background: white; color: var(--teal);
-      border: none; border-radius: 50px;
-      font-size: 15px; font-weight: 700;
-      font-family: 'Noto Sans TC', sans-serif;
-      cursor: pointer;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.2);
-      transition: all 0.2s;
+      padding: 14px 40px; background: white; color: var(--teal);
+      border: none; border-radius: 50px; font-size: 15px; font-weight: 700;
+      font-family: 'Noto Sans TC', sans-serif; cursor: pointer;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.2); transition: all 0.2s;
     }
     .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.25); }
     .splash-chips { margin-top: 28px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-    .splash-chip {
-      font-size: 11px; padding: 4px 12px; border-radius: 20px;
-      background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.88);
-    }
+    .splash-chip { font-size: 11px; padding: 4px 12px; border-radius: 20px; background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.88); }
 
     /* ── ROLE ── */
-    .page-heading { font-family:'Noto Serif TC',serif; font-size:22px; font-weight:700; margin-bottom:6px; }
-    .page-sub { font-size:13px; color:var(--ink-faint); margin-bottom:24px; }
-    .role-cards { display:flex; flex-direction:column; gap:14px; }
+    .page-heading { font-family: 'Noto Serif TC', serif; font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .page-sub { font-size: 13px; color: var(--ink-faint); margin-bottom: 24px; }
+    .role-cards { display: flex; flex-direction: column; gap: 14px; }
     .role-card {
-      padding: 22px 20px;
-      border-radius: var(--r);
-      border: 2px solid rgba(26,24,20,0.1);
-      cursor: pointer;
-      transition: all 0.25s;
-      display: flex; gap: 16px; align-items: flex-start;
-      background: white;
+      padding: 22px 20px; border-radius: var(--r); border: 2px solid rgba(26,24,20,0.1);
+      cursor: pointer; transition: all 0.25s; display: flex; gap: 16px; align-items: flex-start; background: white;
     }
-    .role-card:hover.student-card { border-color: var(--teal); box-shadow: var(--shadow); transform: translateY(-2px); }
-    .role-card:hover.teacher-card { border-color: var(--purple); box-shadow: var(--shadow); transform: translateY(-2px); }
-    .role-icon { font-size: 38px; flex-shrink:0; }
-    .role-title { font-size:16px; font-weight:700; margin-bottom:4px; }
-    .role-desc { font-size:12px; color:var(--ink-faint); line-height:1.7; }
-    .role-feats { margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
-    .feat-tag {
-      font-size:10px; padding:2px 8px; border-radius:10px;
-      background:var(--teal-light); color:var(--teal);
-    }
-    .feat-tag.p { background:var(--purple-light); color:var(--purple); }
+    .role-card:hover.sc { border-color: var(--teal); box-shadow: var(--shadow); transform: translateY(-2px); }
+    .role-card:hover.tc { border-color: var(--purple); box-shadow: var(--shadow); transform: translateY(-2px); }
+    .role-icon { font-size: 38px; flex-shrink: 0; }
+    .role-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .role-desc { font-size: 12px; color: var(--ink-faint); line-height: 1.7; }
+    .role-feats { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .feat-tag { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: var(--teal-light); color: var(--teal); }
+    .feat-tag.p { background: var(--purple-light); color: var(--purple); }
 
     /* ── EMOTION ── */
-    .emo-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:28px; }
+    .emo-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 28px; }
     .emo-btn {
-      display:flex; flex-direction:column; align-items:center;
-      padding:14px 6px; gap:6px;
-      border: 2px solid var(--paper2);
-      border-radius:var(--r);
-      background:var(--paper2);
-      cursor:pointer; transition:all 0.2s;
+      display: flex; flex-direction: column; align-items: center; padding: 14px 6px; gap: 6px;
+      border: 2px solid var(--paper2); border-radius: var(--r); background: var(--paper2);
+      cursor: pointer; transition: all 0.2s;
     }
-    .emo-btn:hover { border-color:var(--teal-mid); }
-    .emo-btn.on { border-color:var(--teal); background:var(--teal-light); }
-    .emo-emoji { font-size:28px; }
-    .emo-label { font-size:10px; color:var(--ink-faint); text-align:center; }
-    .emo-btn.on .emo-label { color:var(--teal); }
-    .field-label { font-size:13px; font-weight:500; color:var(--ink-soft); margin-bottom:8px; }
+    .emo-btn:hover { border-color: var(--teal-mid); }
+    .emo-btn.on { border-color: var(--teal); background: var(--teal-light); }
+    .emo-emoji { font-size: 28px; }
+    .emo-label { font-size: 10px; color: var(--ink-faint); text-align: center; }
+    .emo-btn.on .emo-label { color: var(--teal); }
+    .field-label { font-size: 13px; font-weight: 500; color: var(--ink-soft); margin-bottom: 8px; }
     .text-area {
-      width:100%; padding:12px 14px;
-      border:1.5px solid rgba(26,24,20,0.15);
-      border-radius:var(--r);
-      font-size:13px; font-family:'Noto Sans TC',sans-serif;
-      background:white; color:var(--ink);
-      outline:none; resize:none; transition:border-color 0.2s;
+      width: 100%; padding: 12px 14px; border: 1.5px solid rgba(26,24,20,0.15);
+      border-radius: var(--r); font-size: 13px; font-family: 'Noto Sans TC', sans-serif;
+      background: white; color: var(--ink); outline: none; resize: none; transition: border-color 0.2s;
     }
-    .text-area:focus { border-color:var(--teal); }
+    .text-area:focus { border-color: var(--teal); }
     .btn-next {
-      margin-top:20px; width:100%; padding:14px;
-      background:var(--teal); color:white;
-      border:none; border-radius:50px;
-      font-size:15px; font-weight:500;
-      font-family:'Noto Sans TC',sans-serif;
-      cursor:pointer; transition:all 0.2s;
+      margin-top: 20px; width: 100%; padding: 14px;
+      background: var(--teal); color: white; border: none; border-radius: 50px;
+      font-size: 15px; font-weight: 500; font-family: 'Noto Sans TC', sans-serif;
+      cursor: pointer; transition: all 0.2s;
     }
-    .btn-next:hover { background:#0a5a45; }
-    .btn-next:disabled { background:var(--ink-faint); cursor:not-allowed; }
+    .btn-next:hover { background: #0a5a45; }
+    .btn-next:disabled { background: var(--ink-faint); cursor: not-allowed; }
+
+    /* ── DOLPHIN PICKER ── */
+    .picker-intro {
+      background: var(--teal-light); border-radius: var(--r);
+      padding: 14px 16px; margin-bottom: 24px; font-size: 12px;
+      color: var(--teal); line-height: 1.7;
+    }
+    .picker-intro strong { font-weight: 600; display: block; margin-bottom: 2px; font-size: 13px; }
+    .dolphin-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 8px;
+    }
+    .dolphin-grid .last-one {
+      grid-column: 1 / -1; display: flex; justify-content: center;
+    }
+    .dolphin-grid .last-one .d-card { width: calc(50% - 6px); }
+    .d-card {
+      padding: 18px 14px 16px; border-radius: var(--r);
+      border: 2.5px solid transparent; cursor: pointer;
+      transition: all 0.25s; text-align: center; background: white;
+      box-shadow: 0 1px 8px rgba(26,24,20,0.06);
+    }
+    .d-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .d-card.selected { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .d-emoji { font-size: 36px; margin-bottom: 8px; }
+    .d-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .d-role { font-size: 11px; opacity: 0.8; }
+    .d-tag {
+      display: inline-block; margin-top: 8px; font-size: 10px;
+      padding: 2px 8px; border-radius: 10px; opacity: 0.85;
+    }
+    .rand-card {
+      grid-column: 1 / -1; margin-top: 2px;
+      border: 2px dashed rgba(26,24,20,0.18) !important;
+      background: var(--paper2) !important;
+      justify-content: center;
+    }
+    .rand-card:hover { border-color: var(--teal) !important; background: var(--teal-light) !important; }
+    .rand-card.spinning #randEmoji { animation: spin 0.5s ease-in-out; }
+    @keyframes spin { 0%{transform:rotate(0deg) scale(1)} 50%{transform:rotate(180deg) scale(1.3)} 100%{transform:rotate(360deg) scale(1)} }
 
     /* ── CHAT ── */
-    #s-chat { padding:0; display:flex; flex-direction:column; overflow:hidden; }
+    #s-chat { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
     .dolphin-bar {
-      padding:14px 20px; display:flex; gap:12px; align-items:center;
-      border-bottom:1px solid rgba(26,24,20,0.08); flex-shrink:0;
-      background:white;
+      padding: 14px 20px; display: flex; gap: 12px; align-items: center;
+      border-bottom: 1px solid rgba(26,24,20,0.08); flex-shrink: 0; background: white;
     }
-    .dolphin-ava {
-      width:44px; height:44px; border-radius:50%;
-      background:var(--teal-light);
-      display:flex; align-items:center; justify-content:center;
-      font-size:22px;
+    .d-ava {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
     }
-    .dolphin-name { font-size:15px; font-weight:600; }
-    .dolphin-online { font-size:11px; color:var(--teal-mid); }
+    .d-chat-name { font-size: 15px; font-weight: 700; }
+    .d-chat-type { font-size: 11px; color: var(--ink-faint); margin-top: 1px; }
+    .d-chat-online { font-size: 11px; color: var(--teal-mid); }
     .chat-msgs {
-      flex:1; overflow-y:auto;
-      padding:16px 20px; display:flex;
-      flex-direction:column; gap:12px;
+      flex: 1; overflow-y: auto; padding: 16px 20px;
+      display: flex; flex-direction: column; gap: 12px;
     }
-    .msg { max-width:82%; animation:msgIn 0.3s ease; }
+    .msg { max-width: 82%; animation: msgIn 0.3s ease; }
     @keyframes msgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-    .msg.bot { align-self:flex-start; }
-    .msg.me  { align-self:flex-end; }
-    .bubble { padding:10px 14px; border-radius:18px; font-size:13px; line-height:1.75; }
-    .msg.bot .bubble { background:var(--paper2); border-bottom-left-radius:4px; }
-    .msg.me  .bubble { background:var(--teal); color:white; border-bottom-right-radius:4px; }
-    .msg-time { font-size:10px; color:var(--ink-faint); margin-top:4px; padding:0 4px; }
-    .msg.me .msg-time { text-align:right; }
-    .typing { display:flex; gap:4px; padding:12px 14px; background:var(--paper2); border-radius:18px; border-bottom-left-radius:4px; width:fit-content; }
-    .typing span {
-      width:7px; height:7px; border-radius:50%;
-      background:var(--ink-faint);
-      animation:dot 1.2s infinite;
-    }
-    .typing span:nth-child(2){animation-delay:.2s}
-    .typing span:nth-child(3){animation-delay:.4s}
+    .msg.bot { align-self: flex-start; }
+    .msg.me  { align-self: flex-end; }
+    .bubble { padding: 10px 14px; border-radius: 18px; font-size: 13px; line-height: 1.75; }
+    .msg.bot .bubble { background: var(--paper2); border-bottom-left-radius: 4px; }
+    .msg.me  .bubble { background: var(--teal); color: white; border-bottom-right-radius: 4px; }
+    .msg-time { font-size: 10px; color: var(--ink-faint); margin-top: 4px; padding: 0 4px; }
+    .msg.me .msg-time { text-align: right; }
+    .typing { display: flex; gap: 4px; padding: 12px 14px; background: var(--paper2); border-radius: 18px; border-bottom-left-radius: 4px; width: fit-content; }
+    .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); animation: dot 1.2s infinite; }
+    .typing span:nth-child(2){animation-delay:.2s} .typing span:nth-child(3){animation-delay:.4s}
     @keyframes dot{0%,80%,100%{transform:scale(.7);opacity:.5}40%{transform:scale(1);opacity:1}}
-    .scene-chips { padding:10px 20px 6px; display:flex; flex-direction:column; gap:8px; }
-    .scene-label { font-size:11px; color:var(--ink-faint); }
+    .scene-chips { padding: 10px 20px 6px; display: flex; flex-direction: column; gap: 8px; }
+    .scene-label { font-size: 11px; color: var(--ink-faint); }
     .scene-btn {
-      padding:10px 14px; border:1.5px solid rgba(26,24,20,0.12);
-      border-radius:10px; font-size:12px; cursor:pointer;
-      background:white; color:var(--ink-soft); text-align:left;
-      font-family:'Noto Sans TC',sans-serif; transition:all 0.2s; line-height:1.5;
+      padding: 10px 14px; border: 1.5px solid rgba(26,24,20,0.12);
+      border-radius: 10px; font-size: 12px; cursor: pointer;
+      background: white; color: var(--ink-soft); text-align: left;
+      font-family: 'Noto Sans TC', sans-serif; transition: all 0.2s; line-height: 1.5;
     }
-    .scene-btn:hover { border-color:var(--teal); color:var(--teal); background:var(--teal-light); }
+    .scene-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
     .sim-nudge {
-      display:none; margin:4px 20px 4px;
-      padding:12px 16px; background:var(--teal-light);
-      border-radius:var(--r); cursor:pointer; transition:all 0.2s;
-      align-items:center; gap:10px;
+      display: none; margin: 4px 20px 4px; padding: 12px 16px;
+      background: var(--teal-light); border-radius: var(--r);
+      cursor: pointer; transition: all 0.2s; align-items: center; gap: 10px;
     }
-    .sim-nudge.show { display:flex; }
-    .sim-nudge:hover { background:#c5eadd; }
-    .sim-nudge-text { font-size:12px; color:var(--teal); font-weight:500; flex:1; }
+    .sim-nudge.show { display: flex; }
+    .sim-nudge:hover { background: #c5eadd; }
+    .sim-nudge-text { font-size: 12px; color: var(--teal); font-weight: 500; flex: 1; }
     .chat-input-row {
-      padding:10px 20px 16px; display:flex; gap:10px;
-      border-top:1px solid rgba(26,24,20,0.08);
-      flex-shrink:0; background:white;
+      padding: 10px 20px 16px; display: flex; gap: 10px;
+      border-top: 1px solid rgba(26,24,20,0.08); flex-shrink: 0; background: white;
     }
     .chat-input {
-      flex:1; padding:10px 14px;
-      border:1.5px solid rgba(26,24,20,0.15);
-      border-radius:24px; font-size:13px;
-      font-family:'Noto Sans TC',sans-serif;
-      background:white; outline:none; transition:border-color 0.2s;
+      flex: 1; padding: 10px 14px; border: 1.5px solid rgba(26,24,20,0.15);
+      border-radius: 24px; font-size: 13px; font-family: 'Noto Sans TC', sans-serif;
+      background: white; outline: none; transition: border-color 0.2s;
     }
-    .chat-input:focus { border-color:var(--teal); }
+    .chat-input:focus { border-color: var(--teal); }
     .btn-send {
-      width:40px; height:40px; border:none;
-      background:var(--teal); color:white; border-radius:50%;
-      cursor:pointer; font-size:16px;
-      display:flex; align-items:center; justify-content:center;
-      transition:all 0.2s; flex-shrink:0;
+      width: 40px; height: 40px; border: none; background: var(--teal); color: white;
+      border-radius: 50%; cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; flex-shrink: 0;
     }
-    .btn-send:hover { background:#0a5a45; }
+    .btn-send:hover { background: #0a5a45; }
+    .btn-mic {
+      width: 40px; height: 40px; border: none;
+      background: var(--paper2); color: var(--ink-soft); border-radius: 50%;
+      cursor: pointer; font-size: 17px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; flex-shrink: 0;
+    }
+    .btn-mic:hover { background: var(--teal-light); color: var(--teal); }
+    .btn-mic.rec {
+      background: var(--coral-light); color: var(--coral);
+      animation: pulse-rec 1s ease-in-out infinite;
+    }
+    @keyframes pulse-rec {
+      0%,100% { box-shadow: 0 0 0 0 rgba(153,60,29,0.35); }
+      50%      { box-shadow: 0 0 0 8px rgba(153,60,29,0); }
+    }
+    .chat-input.rec-active { border-color: var(--coral) !important; }
 
     /* ── DECISION ── */
     .situation-box {
-      background:var(--amber-light);
-      border-left:3px solid var(--amber);
-      border-radius:var(--r); padding:14px 16px;
-      margin-bottom:22px; font-size:13px;
-      line-height:1.75; color:var(--ink-soft);
+      background: var(--amber-light); border-left: 3px solid var(--amber);
+      border-radius: var(--r); padding: 14px 16px; margin-bottom: 22px;
+      font-size: 13px; line-height: 1.75; color: var(--ink-soft);
     }
-    .situation-box strong { color:var(--amber); font-size:11px; display:block; margin-bottom:4px; }
-    .choice-list { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+    .situation-box strong { color: var(--amber); font-size: 11px; display: block; margin-bottom: 4px; }
+    .choice-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
     .choice-item {
-      border:2px solid rgba(26,24,20,0.12);
-      border-radius:var(--r); overflow:hidden;
-      cursor:pointer; transition:all 0.25s; background:white;
+      border: 2px solid rgba(26,24,20,0.12); border-radius: var(--r); overflow: hidden;
+      cursor: pointer; transition: all 0.25s; background: white;
     }
-    .choice-item:hover { border-color:var(--teal-mid); box-shadow:var(--shadow); }
-    .choice-item.picked { border-color:var(--teal); }
-    .choice-head { padding:14px 16px; display:flex; align-items:center; gap:12px; }
+    .choice-item:hover { border-color: var(--teal-mid); box-shadow: var(--shadow); }
+    .choice-item.picked { border-color: var(--teal); }
+    .choice-head { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
     .choice-letter {
-      width:28px; height:28px; border-radius:8px;
-      background:var(--paper2);
-      display:flex; align-items:center; justify-content:center;
-      font-size:12px; font-weight:700; color:var(--ink-soft); flex-shrink:0;
+      width: 28px; height: 28px; border-radius: 8px; background: var(--paper2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--ink-soft); flex-shrink: 0;
     }
-    .choice-item.picked .choice-letter { background:var(--teal); color:white; }
-    .choice-text { font-size:13px; font-weight:500; flex:1; }
-    .rec-badge { font-size:10px; padding:3px 8px; background:var(--teal); color:white; border-radius:10px; white-space:nowrap; }
-    .choice-outcomes { display:none; flex-direction:column; gap:8px; padding:0 16px 16px; }
-    .choice-item.picked .choice-outcomes { display:flex; }
-    .out-row { display:flex; align-items:center; gap:10px; }
-    .out-label { font-size:11px; color:var(--ink-faint); width:68px; flex-shrink:0; }
-    .bar-track { flex:1; height:8px; background:var(--paper2); border-radius:10px; overflow:hidden; }
-    .bar-fill { height:100%; border-radius:10px; width:0; transition:width 0.75s cubic-bezier(0.4,0,0.2,1); }
-    .bar-g { background:var(--teal-mid); }
-    .bar-a { background:var(--amber); }
-    .bar-c { background:var(--coral); }
-    .out-pct { font-size:11px; font-weight:600; width:30px; text-align:right; flex-shrink:0; }
+    .choice-item.picked .choice-letter { background: var(--teal); color: white; }
+    .choice-text { font-size: 13px; font-weight: 500; flex: 1; }
+    .rec-badge { font-size: 10px; padding: 3px 8px; background: var(--teal); color: white; border-radius: 10px; white-space: nowrap; }
+    .choice-outcomes { display: none; flex-direction: column; gap: 8px; padding: 0 16px 16px; }
+    .choice-item.picked .choice-outcomes { display: flex; }
+    .out-row { display: flex; align-items: center; gap: 10px; }
+    .out-label { font-size: 11px; color: var(--ink-faint); width: 68px; flex-shrink: 0; }
+    .bar-track { flex: 1; height: 8px; background: var(--paper2); border-radius: 10px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 10px; width: 0; transition: width 0.75s cubic-bezier(0.4,0,0.2,1); }
+    .bar-g { background: var(--teal-mid); } .bar-a { background: var(--amber); } .bar-c { background: var(--coral); }
+    .out-pct { font-size: 11px; font-weight: 600; width: 30px; text-align: right; flex-shrink: 0; }
     .bot-comment {
-      display:none; margin-top:16px; padding:14px 16px;
-      background:var(--teal-light); border-radius:var(--r);
-      gap:10px; align-items:flex-start;
+      display: none; margin-top: 16px; padding: 14px 16px;
+      border-radius: var(--r); gap: 10px; align-items: flex-start;
     }
-    .bot-comment.show { display:flex; }
-    .bot-comment-icon { font-size:20px; flex-shrink:0; }
-    .bot-comment-body { font-size:12px; color:var(--teal); line-height:1.75; }
+    .bot-comment.show { display: flex; }
+    .bot-comment-icon { font-size: 20px; flex-shrink: 0; }
+    .bot-comment-body { font-size: 12px; line-height: 1.75; }
 
     /* ── TEACHER ── */
-    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px; }
-    .stat-box { background:var(--paper2); border-radius:var(--r); padding:14px; text-align:center; }
-    .stat-num { font-size:26px; font-weight:700; }
-    .stat-lbl { font-size:10px; color:var(--ink-faint); margin-top:2px; }
-    .stat-box.alert .stat-num { color:var(--coral); }
-    .stat-box.good  .stat-num { color:var(--teal); }
-    .sec-label { font-size:11px; font-weight:600; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
-    .chart-box { background:white; border-radius:var(--r); padding:16px; margin-bottom:22px; box-shadow:var(--shadow); height:188px; }
-    .stu-list { display:flex; flex-direction:column; gap:10px; }
+    .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 22px; }
+    .stat-box { background: var(--paper2); border-radius: var(--r); padding: 14px; text-align: center; }
+    .stat-num { font-size: 26px; font-weight: 700; }
+    .stat-lbl { font-size: 10px; color: var(--ink-faint); margin-top: 2px; }
+    .stat-box.alert .stat-num { color: var(--coral); } .stat-box.good .stat-num { color: var(--teal); }
+    .sec-label { font-size: 11px; font-weight: 600; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+    .chart-box { background: white; border-radius: var(--r); padding: 16px; margin-bottom: 22px; box-shadow: var(--shadow); height: 188px; }
+    .stu-list { display: flex; flex-direction: column; gap: 10px; }
     .stu-card {
-      background:white; border-radius:var(--r);
-      padding:14px 16px; display:flex; gap:12px; align-items:center;
-      box-shadow:0 1px 8px rgba(26,24,20,0.06);
-      cursor:pointer; transition:all 0.2s;
+      background: white; border-radius: var(--r); padding: 14px 16px;
+      display: flex; gap: 12px; align-items: center;
+      box-shadow: 0 1px 8px rgba(26,24,20,0.06); cursor: pointer; transition: all 0.2s;
     }
-    .stu-card:hover { transform:translateX(4px); }
-    .stu-ava { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-    .av-r { background:var(--coral-light); }
-    .av-a { background:var(--amber-light); }
-    .stu-info { flex:1; }
-    .stu-name { font-size:13px; font-weight:600; }
-    .stu-reason { font-size:11px; color:var(--ink-faint); margin-top:2px; }
-    .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-    .dot-r { background:var(--coral); }
-    .dot-a { background:var(--amber); }
+    .stu-card:hover { transform: translateX(4px); }
+    .stu-ava { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .av-r { background: var(--coral-light); } .av-a { background: var(--amber-light); }
+    .stu-info { flex: 1; } .stu-name { font-size: 13px; font-weight: 600; } .stu-reason { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .dot-r { background: var(--coral); } .dot-a { background: var(--amber); }
 
     /* ── MODAL ── */
     .overlay {
-      position:fixed; inset:0;
-      background:rgba(26,24,20,0.5);
-      z-index:100; display:flex; align-items:flex-end;
-      opacity:0; pointer-events:none; transition:opacity 0.3s;
+      position: fixed; inset: 0; background: rgba(26,24,20,0.5);
+      z-index: 100; display: flex; align-items: flex-end;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
     }
-    .overlay.show { opacity:1; pointer-events:all; }
+    .overlay.show { opacity: 1; pointer-events: all; }
     .sheet {
-      background:var(--paper); border-radius:20px 20px 0 0;
-      padding:24px 22px 44px; width:100%;
-      transform:translateY(100%);
-      transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      background: var(--paper); border-radius: 20px 20px 0 0;
+      padding: 24px 22px 44px; width: 100%;
+      transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
     }
-    .overlay.show .sheet { transform:translateY(0); }
-    .sheet-handle { width:36px; height:4px; background:var(--paper2); border-radius:2px; margin:0 auto 20px; }
-    .sheet-title { font-size:16px; font-weight:700; margin-bottom:4px; }
-    .sheet-sub { font-size:12px; color:var(--ink-faint); margin-bottom:18px; }
-    .mini-bars { height:80px; background:var(--paper2); border-radius:10px; margin-bottom:16px; display:flex; align-items:flex-end; padding:10px 10px 0; gap:4px; }
-    .mb { flex:1; border-radius:4px 4px 0 0; transition:height 0.5s; min-height:0; }
-    .mb-label-row { display:flex; gap:4px; padding:4px 10px 0; margin-bottom:14px; }
-    .mb-label { flex:1; font-size:9px; text-align:center; color:var(--ink-faint); }
-    .sheet-note { font-size:12px; color:var(--ink-soft); background:var(--paper2); border-radius:8px; padding:12px 14px; line-height:1.75; }
-    .btn-close { margin-top:16px; width:100%; padding:12px; background:var(--paper2); border:none; border-radius:50px; font-size:14px; font-family:'Noto Sans TC',sans-serif; cursor:pointer; color:var(--ink-soft); }
-    .btn-close:hover { background:var(--teal-light); color:var(--teal); }
+    .overlay.show .sheet { transform: translateY(0); }
+    .sheet-handle { width: 36px; height: 4px; background: var(--paper2); border-radius: 2px; margin: 0 auto 20px; }
+    .sheet-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .sheet-sub { font-size: 12px; color: var(--ink-faint); margin-bottom: 18px; }
+    .mini-bars { height: 80px; background: var(--paper2); border-radius: 10px; margin-bottom: 0; display: flex; align-items: flex-end; padding: 10px 10px 0; gap: 4px; }
+    .mb { flex: 1; border-radius: 4px 4px 0 0; }
+    .mb-label-row { display: flex; gap: 4px; padding: 4px 10px 0; margin-bottom: 14px; }
+    .mb-label { flex: 1; font-size: 9px; text-align: center; color: var(--ink-faint); }
+    .sheet-note { font-size: 12px; color: var(--ink-soft); background: var(--paper2); border-radius: 8px; padding: 12px 14px; line-height: 1.75; }
+    .btn-close { margin-top: 16px; width: 100%; padding: 12px; background: var(--paper2); border: none; border-radius: 50px; font-size: 14px; font-family: 'Noto Sans TC', sans-serif; cursor: pointer; color: var(--ink-soft); }
+    .btn-close:hover { background: var(--teal-light); color: var(--teal); }
   </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="app-header">
   <button class="btn-back hidden" id="backBtn" onclick="goBack()">←</button>
   <div class="header-title" id="hTitle">海豚決策孿生系統</div>
   <div class="header-badge badge-hidden" id="hBadge"></div>
 </div>
 
-<!-- SCREEN WRAP -->
 <div class="screen-wrap">
 
   <!-- 0. SPLASH -->
@@ -386,7 +352,7 @@
       <button class="btn-start" onclick="nav('s-role')">開始體驗 →</button>
       <div class="splash-chips">
         <span class="splash-chip">教育 AI</span>
-        <span class="splash-chip">情緒支持</span>
+        <span class="splash-chip">五種海豚人格</span>
         <span class="splash-chip">決策模擬</span>
         <span class="splash-chip">社會情緒學習</span>
       </div>
@@ -398,19 +364,19 @@
     <div class="page-heading">你是誰？</div>
     <div class="page-sub">選擇角色，進入對應的功能介面</div>
     <div class="role-cards">
-      <div class="role-card student-card" onclick="pickRole('student')">
+      <div class="role-card sc" onclick="pickRole('student')">
         <div class="role-icon">🧑‍🎓</div>
         <div>
           <div class="role-title">我是學生</div>
-          <div class="role-desc">記錄今天的情緒，與 AI 海豚小藍聊聊你遇到的事，模擬不同選擇的結果。</div>
+          <div class="role-desc">記錄今天的情緒，選擇你喜歡的海豚夥伴陪你聊，再用決策模擬器看不同選擇的結果。</div>
           <div class="role-feats">
             <span class="feat-tag">情緒記錄</span>
-            <span class="feat-tag">海豚聊天</span>
+            <span class="feat-tag">五種海豚</span>
             <span class="feat-tag">決策模擬</span>
           </div>
         </div>
       </div>
-      <div class="role-card teacher-card" onclick="pickRole('teacher')">
+      <div class="role-card tc" onclick="pickRole('teacher')">
         <div class="role-icon">👩‍🏫</div>
         <div>
           <div class="role-title">我是教師</div>
@@ -425,10 +391,10 @@
     </div>
   </div>
 
-  <!-- 2. EMOTION CHECK-IN -->
+  <!-- 2. EMOTION -->
   <div class="screen offRight" id="s-emotion">
     <div class="page-heading">今天，你感覺怎麼樣？</div>
-    <div class="page-sub">每天一次記錄，海豚小藍會更了解你</div>
+    <div class="page-sub">每天一次記錄，海豚會更了解你</div>
     <div class="emo-grid">
       <button class="emo-btn" onclick="pickEmo(this)"><span class="emo-emoji">😄</span><span class="emo-label">很開心</span></button>
       <button class="emo-btn" onclick="pickEmo(this)"><span class="emo-emoji">😊</span><span class="emo-label">還不錯</span></button>
@@ -438,17 +404,24 @@
     </div>
     <div class="field-label">說說發生了什麼（選填）</div>
     <textarea class="text-area" rows="3" placeholder="今天有什麼想聊聊的事嗎？"></textarea>
-    <button class="btn-next" id="emoBtn" disabled onclick="nav('s-chat')">與海豚小藍聊聊 →</button>
+    <button class="btn-next" id="emoBtn" disabled onclick="nav('s-dolphin')">選擇我的海豚夥伴 →</button>
   </div>
 
-  <!-- 3. CHAT -->
+  <!-- 3. DOLPHIN PICKER -->
+  <div class="screen offRight" id="s-dolphin">
+    <div class="page-heading">選擇你的海豚夥伴</div>
+    <div class="page-sub">每種海豚有不同的個性，你想和哪一個聊？</div>
+    <div class="picker-intro">
+      <strong>💡 小提示</strong>
+      不同海豚會從不同角度幫你思考問題。你可以依照今天的心情選擇，也可以嘗試平常不熟悉的視角！
+    </div>
+    <div class="dolphin-grid" id="dolphinGrid"></div>
+  </div>
+
+  <!-- 4. CHAT -->
   <div class="screen offRight" id="s-chat">
-    <div class="dolphin-bar">
-      <div class="dolphin-ava">🐬</div>
-      <div>
-        <div class="dolphin-name">小藍</div>
-        <div class="dolphin-online">● 線上中</div>
-      </div>
+    <div class="dolphin-bar" id="chatHeader">
+      <!-- filled dynamically -->
     </div>
     <div class="chat-msgs" id="chatMsgs"></div>
     <div class="scene-chips" id="sceneChips">
@@ -464,11 +437,12 @@
     </div>
     <div class="chat-input-row">
       <input class="chat-input" id="chatIn" placeholder="說說你的感受..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="btn-mic" id="micBtn" onclick="toggleVoice()" title="語音輸入">🎤</button>
       <button class="btn-send" onclick="sendMsg()">→</button>
     </div>
   </div>
 
-  <!-- 4. DECISION -->
+  <!-- 5. DECISION -->
   <div class="screen offRight" id="s-decision">
     <div class="page-heading">決策模擬器</div>
     <div class="page-sub">點選不同選項，看看可能的結果</div>
@@ -480,7 +454,7 @@
     </div>
   </div>
 
-  <!-- 5. TEACHER -->
+  <!-- 6. TEACHER -->
   <div class="screen offRight" id="s-teacher">
     <div class="page-heading">班級儀表板</div>
     <div class="page-sub">三年甲班 · 本週概況</div>
@@ -511,9 +485,9 @@
     </div>
   </div>
 
-</div><!-- /screen-wrap -->
+</div>
 
-<!-- MODAL SHEET -->
+<!-- MODAL -->
 <div class="overlay" id="overlay" onclick="closeSheet(event)">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -527,93 +501,88 @@
 </div>
 
 <script>
-// ────────────────────────────────────────────
-//  NAVIGATION
-// ────────────────────────────────────────────
-let stack = ['s-splash'];
-let cur = 's-splash';
-let chartInst = null;
+// ═══════════════════════════════════════
+//  DOLPHIN PERSONALITIES
+// ═══════════════════════════════════════
+const DOLPHINS = [
+  {
+    name: '小理', full: '理性海豚', role: '分析利弊得失',
+    color: '#185fa5', bg: '#e6f1fb', tagBg: '#185fa5', tagColor: 'white',
+    greeting: '嗨，我是小理 🐬 分析問題是我的強項，讓我們把你的狀況拆解清楚，找出最有根據的選擇。有什麼想聊的嗎？',
+    openers: [
+      '三天沒說話，關係修復的黃金期正在縮短 📊 你跟他的友誼持續多久了？長期的友誼主動溝通成功率更高。',
+      '先分析風險——「被發現的機率 × 懲罰嚴重度」跟「拒絕後失去友誼的機率 × 損失程度」，哪邊的期望損失比較大？',
+      '先釐清問題根源：是單一事件引發的？還是長期累積？找出原因，才能選對解決方案。',
+    ],
+    replies: [
+      '我理解了。根據你描述的情況，這裡有幾個關鍵變數需要考量——',
+      '好，關鍵資訊我已經掌握了。讓我們用決策模擬來量化不同選擇的結果。',
+    ],
+  },
+  {
+    name: '小珊', full: '情緒海豚', role: '重視當下感受',
+    color: '#7a2c14', bg: '#faece7', tagBg: '#993c1d', tagColor: 'white',
+    greeting: '嗨，我是小珊 🐬 你今天的感受對我來說最重要。不管發生什麼，我都在這裡陪著你，慢慢說沒關係 💙',
+    openers: [
+      '三天沒說話......光是想像那種沉默就讓我覺得好難受 😢 你現在心裡最強烈的感覺是什麼？',
+      '你夾在朋友和自己的良心之間，這種感覺一定很沉重 😔 你現在最擔心的是哪一邊？',
+      '被排除在外的那種孤單，真的很痛 💔 你第一次感覺到被排擠是什麼時候？',
+    ],
+    replies: [
+      '謝謝你告訴我這些 💙 我感受到你有多在意這件事......',
+      '你的感受是最重要的線索。讓我們一起用決策模擬，找到最能保護你情感的選擇。',
+    ],
+  },
+  {
+    name: '小勇', full: '勇氣海豚', role: '鼓勵冒險挑戰',
+    color: '#7a4e0a', bg: '#faeeda', tagBg: '#ba7517', tagColor: 'white',
+    greeting: '嗨，我是小勇 🐬 遇到問題最重要的是行動力！跟我說說你遇到了什麼，我們一起想辦法突破它！🔥',
+    openers: [
+      '三天了還在等——是時候主動出擊了！🔥 你在等什麼？你最怕哪種結果發生？',
+      '這種時候需要勇敢說出自己立場的力量！拒絕不是傷害朋友，反而是對這段關係最真誠的尊重。你怕的是什麼？',
+      '被排擠？那就讓他們看看你的實力！🌟 你有沒有想過，主動去認識其他有趣的同學？',
+    ],
+    replies: [
+      '對！你已經看清楚問題了，現在缺的只是跨出那一步的行動力——',
+      '你比你想像的更有力量！來，我們用決策模擬看看哪個選擇最能讓你往前走。',
+    ],
+  },
+  {
+    name: '小安', full: '安全海豚', role: '降低決策風險',
+    color: '#0a4d3a', bg: '#e1f5ee', tagBg: '#0f6e56', tagColor: 'white',
+    greeting: '嗨，我是小安 🐬 我會幫你把每個選擇的風險都想清楚，讓你做出最穩妥的決定。先跟我說說發生了什麼？',
+    openers: [
+      '三天沒說話，情緒可能還有點波動。你確定自己現在的狀態，適合進行一次重要的對話嗎？先照顧好自己很重要。',
+      '先冷靜評估風險：如果被發現，後果是什麼？這個風險你能承受嗎？再想想拒絕後的最壞情況是什麼？',
+      '在採取任何行動之前，先確保你自己的情緒是穩定的。你現在有可以傾訴的人嗎——家人或信任的師長？',
+    ],
+    replies: [
+      '我聽到了。在想怎麼做之前，先確認你現在是安全的、情緒是穩定的......',
+      '我們已經把主要風險都梳理清楚了。讓我們用決策模擬，找出風險最低的選擇。',
+    ],
+  },
+  {
+    name: '小紫', full: '社交海豚', role: '人際關係優先',
+    color: '#3b3282', bg: '#eeedfe', tagBg: '#534ab7', tagColor: 'white',
+    greeting: '嗨，我是小紫 🐬 人際關係是一切的核心！告訴我你和誰之間發生了什麼事？我最擅長幫你想清楚關係的影響 💜',
+    openers: [
+      '三天沒說話，你們共同的朋友有沒有注意到？這件事有沒有開始影響你在班上的其他關係？',
+      '朋友向你求助，說明他信任你。但這件事如果傳出去，對你們兩個在班上的形象各有什麼影響？',
+      '被排擠通常跟某個關鍵人物有關。你覺得是誰在主導這件事？如果先搞好跟他的關係，情況會不會不同？',
+    ],
+    replies: [
+      '我在幫你想這件事對你周圍整體關係網絡的影響......',
+      '人際關係很複雜，但我們可以找到最能維護你重要連結的做法。來用決策模擬看看。',
+    ],
+  },
+];
 
-function nav(id) {
-  const curEl = document.getElementById(cur);
-  const nxtEl = document.getElementById(id);
-  curEl.classList.remove('active');
-  curEl.classList.add('offLeft');
-  nxtEl.classList.remove('offLeft','offRight');
-  nxtEl.classList.add('active');
-  stack.push(id);
-  cur = id;
-  updateHeader(id);
-  if (id === 's-chat') initChat();
-  if (id === 's-teacher') setTimeout(initChart, 300);
-}
-
-function goBack() {
-  if (stack.length <= 1) return;
-  const from = stack.pop();
-  const to   = stack[stack.length - 1];
-  const fromEl = document.getElementById(from);
-  const toEl   = document.getElementById(to);
-  fromEl.classList.remove('active');
-  fromEl.classList.add('offRight');
-  toEl.classList.remove('offLeft','offRight');
-  toEl.classList.add('active');
-  cur = to;
-  updateHeader(to);
-}
-
-const TITLES = {
-  's-splash':   '海豚決策孿生系統',
-  's-role':     '選擇角色',
-  's-emotion':  '情緒記錄',
-  's-chat':     '與小藍對話',
-  's-decision': '決策模擬器',
-  's-teacher':  '班級儀表板',
-};
-function updateHeader(id) {
-  document.getElementById('hTitle').textContent = TITLES[id] || '';
-  document.getElementById('backBtn').classList.toggle('hidden', id === 's-splash');
-  const b = document.getElementById('hBadge');
-  if (['s-emotion','s-chat','s-decision'].includes(id)) {
-    b.textContent = '學生'; b.className = 'header-badge badge-student';
-  } else if (id === 's-teacher') {
-    b.textContent = '教師'; b.className = 'header-badge badge-teacher';
-  } else {
-    b.className = 'header-badge badge-hidden';
-  }
-}
-
-// ────────────────────────────────────────────
-//  ROLE
-// ────────────────────────────────────────────
-function pickRole(r) {
-  if (r === 'student') nav('s-emotion');
-  else nav('s-teacher');
-}
-
-// ────────────────────────────────────────────
-//  EMOTION
-// ────────────────────────────────────────────
-function pickEmo(el) {
-  document.querySelectorAll('.emo-btn').forEach(b => b.classList.remove('on'));
-  el.classList.add('on');
-  document.getElementById('emoBtn').disabled = false;
-}
-
-// ────────────────────────────────────────────
-//  CHAT
-// ────────────────────────────────────────────
-let scene = 0, chatRound = 0;
-
+// ═══════════════════════════════════════
+//  SCENARIOS
+// ═══════════════════════════════════════
 const SCENARIOS = [
   {
-    label: '我跟好朋友吵架了，不知道怎麼辦...',
-    situ:  '我跟好朋友因為一件誤解吵架了，已經三天沒說話。我很在乎這段友誼，但又不確定要不要先道歉。',
-    open:  '聽起來你心裡很不好受 😔 三天沒說話，一定很煎熬。你說這是「誤解」——你有機會跟他說清楚嗎？',
-    replies: [
-      '謝謝你告訴我這些 💙 這說明你很在乎這段友誼。讓我們一起想想，你有哪些選擇？',
-      '我聽到了。這種糾結說明你是個重感情的人。要不要用決策模擬，看看不同做法的可能結果？',
-    ],
+    situ: '我跟好朋友因為一件誤解吵架了，已經三天沒說話。我很在乎這段友誼，但又不確定要不要先道歉。',
     choices: [
       { l:'A', t:'主動傳訊息道歉，解釋清楚誤會', rec:true,
         outs:[{lb:'關係修復',cl:'bar-g',pct:75},{lb:'尷尬收場',cl:'bar-a',pct:18},{lb:'更嚴重',cl:'bar-c',pct:7}],
@@ -627,13 +596,7 @@ const SCENARIOS = [
     ]
   },
   {
-    label: '朋友叫我幫他作業，很為難',
-    situ:  '好朋友說他沒時間做作業，求我把作業借他抄。我不想讓他失望，但又擔心被老師發現一起受罰。',
-    open:  '這個情況真的很為難 😟 你不想讓朋友失望，但也擔心自己受牽連，兩邊都有顧慮對嗎？讓我們一起想清楚。',
-    replies: [
-      '你願意考慮幫他，說明你是個重視朋友的人 🌟 但你也有保護自己的責任，兩件事都重要。',
-      '嗯，我明白你的兩難。要不要用決策模擬，一起看看不同選擇的風險？',
-    ],
+    situ: '好朋友說他沒時間做作業，求我把作業借他抄。我不想讓他失望，但又擔心被老師發現一起受罰。',
     choices: [
       { l:'A', t:'拒絕，但提議一起在下課前把作業完成', rec:true,
         outs:[{lb:'維持信任',cl:'bar-g',pct:72},{lb:'朋友不開心',cl:'bar-a',pct:23},{lb:'關係受損',cl:'bar-c',pct:5}],
@@ -647,20 +610,14 @@ const SCENARIOS = [
     ]
   },
   {
-    label: '班上有人一直排擠我',
-    situ:  '班上一群同學成立了群組，刻意把我排在外面。午餐時間也常常找不到人一起坐，感覺很孤單。',
-    open:  '聽到這些，我心裡也跟著難受 💙 那種孤單的感覺真的很不好受。你知道是從什麼時候開始的嗎？',
-    replies: [
-      '謝謝你願意跟我說 💙 不管什麼原因，你都不應該被這樣對待。我們一起想想你能做什麼。',
-      '我在這裡陪著你 🐬 你已經想了很多了，要不要用決策模擬看看不同做法的可能結果？',
-    ],
+    situ: '班上一群同學成立了群組，刻意把我排在外面。午餐時間也常常找不到人一起坐，感覺很孤單。',
     choices: [
       { l:'A', t:'主動接近其他同學，試著建立新的連結', rec:true,
         outs:[{lb:'找到新朋友',cl:'bar-g',pct:65},{lb:'慢慢融入',cl:'bar-a',pct:25},{lb:'再次碰壁',cl:'bar-c',pct:10}],
         tip:'把眼光放寬，班上可能有其他也在尋找朋友的人。不要讓一個圈子定義你的人際關係。' },
       { l:'B', t:'直接去問其中一個同學，發生了什麼', rec:false,
         outs:[{lb:'誤會解開',cl:'bar-g',pct:45},{lb:'尷尬但平和',cl:'bar-a',pct:35},{lb:'衝突升高',cl:'bar-c',pct:20}],
-        tip:'直接溝通需要很大勇氣，這可能是最快解決問題的方式，但也要做好接受各種回應的心理準備。' },
+        tip:'直接溝通需要很大勇氣，可能是最快解決問題的方式，但也要做好接受各種回應的心理準備。' },
       { l:'C', t:'告訴導師或輔導老師，請求協助', rec:false,
         outs:[{lb:'得到支持',cl:'bar-g',pct:70},{lb:'同學知道',cl:'bar-a',pct:20},{lb:'情況複雜化',cl:'bar-c',pct:10}],
         tip:'向大人求助是你的權利，不是軟弱。輔導老師受過專業訓練，可以幫助你更有效地處理這個狀況。' },
@@ -668,13 +625,168 @@ const SCENARIOS = [
   },
 ];
 
+// ═══════════════════════════════════════
+//  STATE & NAVIGATION
+// ═══════════════════════════════════════
+let stack = ['s-splash'], cur = 's-splash';
+let dolphinIdx = 0, scene = 0, chatRound = 0;
+let chartInst = null;
+
+function nav(id) {
+  const fromEl = document.getElementById(cur);
+  const toEl   = document.getElementById(id);
+  fromEl.classList.remove('active'); fromEl.classList.add('offLeft');
+  toEl.classList.remove('offLeft','offRight'); toEl.classList.add('active');
+  stack.push(id); cur = id;
+  updateHeader(id);
+  if (id === 's-dolphin') buildDolphinPicker();
+  if (id === 's-chat')    initChat();
+  if (id === 's-teacher') setTimeout(initChart, 300);
+}
+
+function goBack() {
+  if (stack.length <= 1) return;
+  const from = stack.pop();
+  const to   = stack[stack.length - 1];
+  document.getElementById(from).classList.remove('active'); document.getElementById(from).classList.add('offRight');
+  document.getElementById(to).classList.remove('offLeft','offRight'); document.getElementById(to).classList.add('active');
+  cur = to; updateHeader(to);
+}
+
+const TITLES = { 's-splash':'海豚決策孿生系統','s-role':'選擇角色','s-emotion':'情緒記錄','s-dolphin':'選擇海豚夥伴','s-chat':'聊天','s-decision':'決策模擬器','s-teacher':'班級儀表板' };
+function updateHeader(id) {
+  const d = DOLPHINS[dolphinIdx];
+  document.getElementById('hTitle').textContent = id === 's-chat' ? `與${d.name}對話` : (TITLES[id] || '');
+  document.getElementById('backBtn').classList.toggle('hidden', id === 's-splash');
+  const b = document.getElementById('hBadge');
+  if (['s-emotion','s-dolphin','s-chat','s-decision'].includes(id)) {
+    b.textContent = '學生'; b.className = 'header-badge badge-student';
+  } else if (id === 's-teacher') {
+    b.textContent = '教師'; b.className = 'header-badge badge-teacher';
+  } else {
+    b.className = 'header-badge badge-hidden';
+  }
+}
+
+// ═══════════════════════════════════════
+//  ROLE & EMOTION
+// ═══════════════════════════════════════
+function pickRole(r) { r === 'student' ? nav('s-emotion') : nav('s-teacher'); }
+function pickEmo(el) {
+  document.querySelectorAll('.emo-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('emoBtn').disabled = false;
+}
+
+// ═══════════════════════════════════════
+//  DOLPHIN PICKER
+// ═══════════════════════════════════════
+function buildDolphinPicker() {
+  const grid = document.getElementById('dolphinGrid');
+  grid.innerHTML = '';
+  DOLPHINS.forEach((d, i) => {
+    if (i === 4) {
+      const wrap = document.createElement('div');
+      wrap.className = 'last-one';
+      wrap.appendChild(makeDolphinCard(d, i));
+      grid.appendChild(wrap);
+    } else {
+      grid.appendChild(makeDolphinCard(d, i));
+    }
+  });
+  // Random card — spans full width below the grid
+  const randCard = document.createElement('div');
+  randCard.className = 'd-card rand-card';
+  randCard.id = 'randCard';
+  randCard.innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="font-size:32px;flex-shrink:0;" id="randEmoji">🎲</div>
+      <div style="text-align:left;">
+        <div style="font-size:14px;font-weight:700;color:var(--ink-soft)">隨機海豚</div>
+        <div style="font-size:11px;color:var(--ink-faint);margin-top:2px;">讓系統幫你選一位夥伴</div>
+      </div>
+    </div>
+  `;
+  randCard.onclick = pickRandom;
+  grid.appendChild(randCard);
+}
+
+function makeDolphinCard(d, i) {
+  const card = document.createElement('div');
+  card.className = 'd-card' + (i === dolphinIdx ? ' selected' : '');
+  card.style.borderColor = i === dolphinIdx ? d.color : 'transparent';
+  card.style.background = d.bg;
+  card.innerHTML = `
+    <div class="d-emoji">🐬</div>
+    <div class="d-name" style="color:${d.color}">${d.full}</div>
+    <div class="d-role" style="color:${d.color}">${d.role}</div>
+    <div class="d-tag" style="background:${d.tagBg};color:${d.tagColor}">${d.name}</div>
+  `;
+  card.onclick = () => selectDolphin(i);
+  return card;
+}
+
+function pickRandom() {
+  const card = document.getElementById('randCard');
+  card.classList.add('spinning');
+  // Shuffle emoji a few times for fun
+  const emojis = ['🎲','🐬','❓','🌀','✨'];
+  let count = 0;
+  const interval = setInterval(() => {
+    document.getElementById('randEmoji').textContent = emojis[count % emojis.length];
+    count++;
+    if (count >= 8) {
+      clearInterval(interval);
+      const picked = Math.floor(Math.random() * DOLPHINS.length);
+      const d = DOLPHINS[picked];
+      document.getElementById('randEmoji').textContent = '🐬';
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="font-size:32px;flex-shrink:0;">🐬</div>
+          <div style="text-align:left;">
+            <div style="font-size:14px;font-weight:700;color:${d.color}">抽到了！${d.full}</div>
+            <div style="font-size:11px;color:var(--ink-faint);margin-top:2px;">${d.role}</div>
+          </div>
+        </div>`;
+      card.style.borderColor = d.color;
+      card.style.background = d.bg;
+      setTimeout(() => selectDolphin(picked), 600);
+    }
+  }, 100);
+}
+
+function selectDolphin(i) {
+  dolphinIdx = i;
+  // Update visuals
+  document.querySelectorAll('.d-card').forEach((c, idx) => {
+    const d = DOLPHINS[idx];
+    c.classList.toggle('selected', idx === i);
+    c.style.borderColor = idx === i ? d.color : 'transparent';
+  });
+  // Brief delay then navigate
+  setTimeout(() => nav('s-chat'), 220);
+}
+
+// ═══════════════════════════════════════
+//  CHAT
+// ═══════════════════════════════════════
 function initChat() {
-  const box = document.getElementById('chatMsgs');
-  box.innerHTML = '';
+  const d = DOLPHINS[dolphinIdx];
+  // Build header
+  document.getElementById('chatHeader').innerHTML = `
+    <div class="d-ava" style="background:${d.bg}">🐬</div>
+    <div>
+      <div class="d-chat-name" style="color:${d.color}">${d.name} <span style="font-size:11px;font-weight:400;color:var(--ink-faint)">${d.full}</span></div>
+      <div class="d-chat-type" style="color:${d.color};opacity:.7">${d.role}</div>
+    </div>
+    <div class="d-chat-online">● 線上中</div>
+  `;
+  // Clear messages
+  document.getElementById('chatMsgs').innerHTML = '';
   chatRound = 0;
   document.getElementById('sceneChips').style.display = 'flex';
   document.getElementById('simNudge').classList.remove('show');
-  setTimeout(() => addMsg('bot', '嗨！我是小藍 🐬 很高興今天也陪著你。你今天有什麼想聊聊的嗎？'), 400);
+  setTimeout(() => addMsg('bot', d.greeting), 400);
 }
 
 function addMsg(role, text) {
@@ -687,24 +799,27 @@ function addMsg(role, text) {
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
 }
-
 function showTyping() {
   const box = document.getElementById('chatMsgs');
   const div = document.createElement('div');
   div.id = 'typing'; div.className = 'msg bot';
   div.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
+  box.appendChild(div); box.scrollTop = box.scrollHeight;
 }
 function removeTyping() { const el = document.getElementById('typing'); if(el) el.remove(); }
 
 function pickScene(idx) {
   scene = idx;
   document.getElementById('sceneChips').style.display = 'none';
-  addMsg('me', SCENARIOS[idx].label);
+  const labels = ['我跟好朋友吵架了，不知道怎麼辦...','朋友叫我幫他作業，很為難','班上有人一直排擠我'];
+  addMsg('me', labels[idx]);
   setTimeout(() => {
     showTyping();
-    setTimeout(() => { removeTyping(); addMsg('bot', SCENARIOS[idx].open); chatRound = 1; }, 1800);
+    setTimeout(() => {
+      removeTyping();
+      addMsg('bot', DOLPHINS[dolphinIdx].openers[idx]);
+      chatRound = 1;
+    }, 1800);
   }, 300);
 }
 
@@ -713,7 +828,8 @@ function sendMsg() {
   const txt = inp.value.trim(); if (!txt) return;
   addMsg('me', txt); inp.value = '';
   if (chatRound >= 1) {
-    const rep = SCENARIOS[scene].replies[Math.min(chatRound-1, 1)];
+    const replies = DOLPHINS[dolphinIdx].replies;
+    const rep = replies[Math.min(chatRound - 1, replies.length - 1)];
     setTimeout(() => {
       showTyping();
       setTimeout(() => {
@@ -731,22 +847,23 @@ function toDecision() {
   nav('s-decision');
 }
 
-// ────────────────────────────────────────────
+// ═══════════════════════════════════════
 //  DECISION
-// ────────────────────────────────────────────
+// ═══════════════════════════════════════
 function buildChoices(sc) {
   const list = document.getElementById('choiceList');
   list.innerHTML = '';
   document.getElementById('botComment').classList.remove('show');
+  const d = DOLPHINS[dolphinIdx];
   sc.choices.forEach(c => {
-    const d = document.createElement('div');
-    d.className = 'choice-item';
-    d.onclick = () => pickChoice(d, c);
-    d.innerHTML = `
+    const el = document.createElement('div');
+    el.className = 'choice-item';
+    el.onclick = () => pickChoice(el, c);
+    el.innerHTML = `
       <div class="choice-head">
         <div class="choice-letter">${c.l}</div>
         <div class="choice-text">${c.t}</div>
-        ${c.rec ? '<div class="rec-badge">海豚推薦</div>' : ''}
+        ${c.rec ? '<div class="rec-badge">推薦</div>' : ''}
       </div>
       <div class="choice-outcomes">
         ${c.outs.map(o => `
@@ -756,29 +873,112 @@ function buildChoices(sc) {
             <div class="out-pct" style="color:var(${o.cl==='bar-g'?'--teal-mid':o.cl==='bar-a'?'--amber':'--coral'})">${o.pct}%</div>
           </div>`).join('')}
       </div>`;
-    list.appendChild(d);
+    list.appendChild(el);
   });
+  // Color rec badge with dolphin color
+  document.querySelectorAll('.rec-badge').forEach(b => { b.style.background = d.color; });
 }
 
 function pickChoice(el, c) {
-  document.querySelectorAll('.choice-item').forEach(x => x.classList.remove('picked'));
+  const d = DOLPHINS[dolphinIdx];
+  document.querySelectorAll('.choice-item').forEach(x => {
+    x.classList.remove('picked');
+    x.querySelectorAll('.choice-letter').forEach(l => { l.style.background=''; l.style.color=''; });
+  });
   el.classList.add('picked');
-  setTimeout(() => {
-    el.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.p + '%');
-  }, 30);
-  document.getElementById('botCommentTxt').textContent = c.tip;
+  el.querySelectorAll('.choice-letter').forEach(l => { l.style.background = d.color; l.style.color = 'white'; });
+  setTimeout(() => { el.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.p + '%'); }, 30);
   const bc = document.getElementById('botComment');
+  bc.style.background = d.bg;
+  document.getElementById('botCommentTxt').style.color = d.color;
+  document.getElementById('botCommentTxt').textContent = c.tip;
   bc.classList.add('show');
-  bc.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  bc.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ────────────────────────────────────────────
+// ═══════════════════════════════════════
+//  VOICE INPUT
+// ═══════════════════════════════════════
+let recognition = null, isRec = false;
+
+function toggleVoice() {
+  isRec ? stopVoice() : startVoice();
+}
+
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    alert('您的瀏覽器不支援語音輸入。\n建議使用 Chrome 或 Edge 瀏覽器。');
+    return;
+  }
+  if (!recognition) {
+    recognition = new SR();
+    recognition.lang = 'zh-TW';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    recognition.onresult = (e) => {
+      let interim = '', final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        e.results[i].isFinal ? (final += e.results[i][0].transcript) : (interim += e.results[i][0].transcript);
+      }
+      const inp = document.getElementById('chatIn');
+      inp.value = final || interim;
+      if (!final && interim) inp.placeholder = interim;
+    };
+
+    recognition.onspeechend = () => recognition.stop();
+
+    recognition.onend = () => {
+      isRec = false; recognition = null;
+      setMicState(false);
+      const inp = document.getElementById('chatIn');
+      inp.placeholder = '說說你的感受...';
+      // auto-send if there's text
+      if (inp.value.trim()) setTimeout(sendMsg, 300);
+    };
+
+    recognition.onerror = (e) => {
+      isRec = false; recognition = null;
+      setMicState(false);
+      document.getElementById('chatIn').placeholder = '說說你的感受...';
+      if (e.error === 'not-allowed') alert('請在瀏覽器允許麥克風權限後再試。');
+    };
+  }
+
+  try {
+    recognition.start();
+    isRec = true;
+    setMicState(true);
+    document.getElementById('chatIn').value = '';
+    document.getElementById('chatIn').placeholder = '🎤 聆聽中，請說話...';
+  } catch(err) { /* already started */ }
+}
+
+function stopVoice() {
+  if (recognition) { try { recognition.stop(); } catch(e) {} }
+  isRec = false;
+  setMicState(false);
+  document.getElementById('chatIn').placeholder = '說說你的感受...';
+}
+
+function setMicState(on) {
+  const btn = document.getElementById('micBtn');
+  const inp = document.getElementById('chatIn');
+  if (!btn) return;
+  btn.classList.toggle('rec', on);
+  inp.classList.toggle('rec-active', on);
+  btn.title = on ? '點擊停止錄音' : '語音輸入';
+  btn.textContent = on ? '⏹' : '🎤';
+}
+
+// ═══════════════════════════════════════
 //  TEACHER
-// ────────────────────────────────────────────
+// ═══════════════════════════════════════
 function initChart() {
   const ctx = document.getElementById('moodChart');
   if (!ctx) return;
-  if (chartInst) { chartInst.destroy(); }
+  if (chartInst) chartInst.destroy();
   chartInst = new Chart(ctx, {
     type: 'line',
     data: {
@@ -786,18 +986,16 @@ function initChart() {
       datasets: [
         { label:'班級平均心情', data:[3.8,3.5,3.2,3.0,3.4,3.7,3.6],
           borderColor:'#1d9e75', backgroundColor:'rgba(29,158,117,0.1)',
-          borderWidth:2, pointRadius:4, pointBackgroundColor:'#1d9e75',
-          fill:true, tension:0.4 },
+          borderWidth:2, pointRadius:4, pointBackgroundColor:'#1d9e75', fill:true, tension:0.4 },
         { label:'焦慮指數', data:[2.1,2.4,2.8,3.1,2.9,2.3,2.2],
           borderColor:'#ba7517', backgroundColor:'rgba(186,117,23,0)',
-          borderWidth:2, pointRadius:4, pointBackgroundColor:'#ba7517',
-          fill:false, tension:0.4 },
+          borderWidth:2, pointRadius:4, pointBackgroundColor:'#ba7517', fill:false, tension:0.4 },
       ]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins: { legend:{ display:true, position:'top', labels:{ font:{size:11,family:'Noto Sans TC'}, boxWidth:12, padding:12 }}},
-      scales: {
+      plugins:{ legend:{ display:true, position:'top', labels:{ font:{size:11,family:'Noto Sans TC'}, boxWidth:12, padding:12 }}},
+      scales:{
         y:{ min:1, max:5, ticks:{font:{size:10},stepSize:1}, grid:{color:'rgba(26,24,20,0.06)'} },
         x:{ ticks:{font:{size:10}}, grid:{display:false} }
       }
@@ -805,27 +1003,24 @@ function initChart() {
   });
 }
 
-// ────────────────────────────────────────────
+// ═══════════════════════════════════════
 //  MODAL
-// ────────────────────────────────────────────
+// ═══════════════════════════════════════
 const DAYS = ['一','二','三','四','五','六','日'];
-const COLORS = { 0:'var(--paper)', 1:'var(--coral)', 2:'var(--coral)', 3:'var(--amber)', 4:'var(--teal-mid)', 5:'var(--teal)' };
+const MCOLORS = { 0:'var(--paper)', 1:'var(--coral)', 2:'var(--coral)', 3:'var(--amber)', 4:'var(--teal-mid)', 5:'var(--teal)' };
 
 function openSheet(name, note, data) {
   document.getElementById('shTitle').textContent = name + ' 的本週概況';
-  document.getElementById('shNote').textContent = '📝 ' + note;
-  const bars   = document.getElementById('miniBars');
-  const labels = document.getElementById('miniLabels');
+  document.getElementById('shNote').textContent  = '📝 ' + note;
+  const bars = document.getElementById('miniBars'), labels = document.getElementById('miniLabels');
   bars.innerHTML = ''; labels.innerHTML = '';
-  data.forEach((v,i) => {
-    const pct   = v === 0 ? 0 : Math.max(8, (v/5)*100);
-    const color = COLORS[v] || 'var(--paper2)';
-    bars.innerHTML   += `<div class="mb" style="height:${pct}%;background:${color};"></div>`;
+  data.forEach((v, i) => {
+    const pct = v === 0 ? 0 : Math.max(8, (v/5)*100);
+    bars.innerHTML   += `<div class="mb" style="height:${pct}%;background:${MCOLORS[v]||'var(--paper2)'}"></div>`;
     labels.innerHTML += `<div class="mb-label">${DAYS[i]}</div>`;
   });
   document.getElementById('overlay').classList.add('show');
 }
-
 function closeSheet(e) {
   if (!e || e.target === document.getElementById('overlay') || e.target.classList.contains('btn-close'))
     document.getElementById('overlay').classList.remove('show');
